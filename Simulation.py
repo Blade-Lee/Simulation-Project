@@ -26,9 +26,6 @@ U = 5
 #Channel broadcast rate
 R = 100
 
-#Channel set
-#C = []
-
 #No. of channel groups T = N/K or T = N/U
 T = 0
 
@@ -206,9 +203,26 @@ class ChannelGroupItem(object):
         self.chan_length += k.item_len()
 
     def print_item(self):
-        print ' C%d (%d):' %(self.chan_index, self.chan_length)
+        hasHole = True
+        D = self.chan_contain[0].get_group_index()
+        print '\nC%d (%d):' %(self.chan_index, self.chan_length)
+        print '----------------------------------------'
         for i in self.chan_contain:
-            i.print_item()
+            if i.get_group_index() == -1:
+                i.print_item()
+                print '----------------------------------------'
+                hasHole = True
+            elif i.get_group_index() != D:
+                if not hasHole:
+                    print '----------------------------------------'
+                i.print_item()
+                hasHole = False
+                D = i.get_group_index()
+            else:
+                i.print_item()
+                hasHole = False
+        if not hasHole:
+            print '----------------------------------------'
 
     def item_len(self):
         return self.chan_length
@@ -325,8 +339,8 @@ def SDAA(G_11,X):
         s.append_dataGroup(G_1.get_member(i))
 
     print '\nThe assigned channel groups are:'
-    CG.print_groups()
-    #CG.print_grouplen()
+    #CG.print_groups()
+    CG.print_grouplen()
 
     return CG
 
@@ -780,23 +794,21 @@ if __name__ == '__main__':
         I = copy.deepcopy(COA(G.get_member(i)))
         G3.add_member(I)
 
-    #print '\n-----------------------\n SDAA assignment result:'
+    print '\n-----------------------\n SDAA assignment result:'
 
-    #SDAA(G,K)
+    print('SDAA len diff:%d' %data_checker(SDAA(G,K), G))
 
-    #print '\n-----------------------\n MDAA assignment result:'
+    print '\n-----------------------\n MDAA assignment result:'
 
-    #SDAA(G1,U)
+    print('MDAA len diff:%d' %data_checker(SDAA(G1,U), G1))
 
-    #print '\n-----------------------\n AEA assignment result:'
+    print '\n-----------------------\n AEA assignment result:'
 
-    #SDAA(G2,U)
-
-    #print data_checker(SDAA(G2,U), G2)
+    print('AEA len diff:%d' %data_checker(SDAA(G2,U), G2))
 
     print '\n-----------------------\n COA assignment result:'
 
-    print('len diff:%d' %data_checker(SDAA(G3,U), G3))
+    print('COA len diff:%d' %data_checker(SDAA(G3,U), G3))
 
 
         
