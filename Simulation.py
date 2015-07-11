@@ -70,7 +70,7 @@ class DataGroupItem(object):
         #True several pieces are combined together
         #ComList is used to pass the list where the pieces are stored
         self.combined = Combined
-        self.comlist = ComList
+        self.comlist = copy.deepcopy(ComList)
 
         #Pieces: No. of pieces a data is divided into
         self.pieces = Pieces
@@ -136,7 +136,14 @@ class DataGroupMember(object):
         return max(self.subStream, key = lambda x:x.item_len()).item_len()
 
     def total_len(self):
-        return sum([x.item_len() for x in self.subStream])
+        temp_len = 0
+        for x in self.subStream:
+            if x.combined:
+                for y in x.get_comlist():
+                    temp_len += y.item_len()
+            else:
+                temp_len += x.item_len()
+        return temp_len
 
     def get_substream(self):
         return self.subStream
@@ -318,8 +325,8 @@ def SDAA(G_11,X):
         s.append_dataGroup(G_1.get_member(i))
 
     print '\nThe assigned channel groups are:'
-    #CG.print_groups()
-    CG.print_grouplen()
+    CG.print_groups()
+    #CG.print_grouplen()
 
     return CG
 
@@ -454,8 +461,6 @@ def AEA(Dmember):
             else:
                 s.set_pieces(n[k]+1)
 
-            #print '\n++++++++++\n Aw %d, n[k] %d, rem %d, G %d, D %d, P %d: %d' %(Aw, n[k], s.item_len() % Aw, s.get_group_index(), s.get_data_index(), s.get_pieces(), s.item_len())
-
             for i in range(0,n[k]):
                 s.cut_len(Aw)
 
@@ -538,13 +543,11 @@ def COA(Dmember):
 
     A = int(math.ceil(sum([x.item_len() for x in Dmember.get_substream()])/float(U)))
 
-    #print '----- Group: %d, original A: %d' %(Dmember.get_memberIndex(), A)
-
     Temp = 0
 
     while Flag:
 
-        print 'new-----------------'
+        #logging.info('D:%d A:%d\n' %(Dmember.get_memberIndex(), A))
 
         Flag = False
 
@@ -580,7 +583,6 @@ def COA(Dmember):
             for i in range(0,n[k]):
 
                 if l.get_pieces() > 1:
-                    #print 'index:', l.get_data_index(), 'pieces:', l.get_pieces(), 'second: ', l.get_data_second_index()
                     l.set_data_second_index(l.get_data_second_index() + 1)
 
                 t = DataGroupItem(l.get_group_index(), l.get_data_index(), A, l.get_data_second_index(), l.get_pieces())
@@ -588,10 +590,10 @@ def COA(Dmember):
 
         h = U - sum([x for x in n])
 
-        #print 'remaining h:', h
-
+        #After phase 1, data len correct
 
         #----------------Phase 2----------------
+        #Insert the remaining l as a whole, then set l to 0.
 
         G.get_substream().sort(key = lambda x:x.item_len(), reverse = True)
 
@@ -607,65 +609,102 @@ def COA(Dmember):
                     if l.item_len() + In - f[k] <= d[j]:
                         d[j] -= l.item_len() + In - f[k]
 
-                        print 'pieces:', l.get_pieces()
                         if l.get_pieces() > 1:
                             l.set_data_second_index(l.get_data_second_index() + 1)
-                            logging.info()
                         t = copy.deepcopy(l)
                         X[j].append(t)
 
                         l.set_len(0)
 
+                        break
+
+        #After phase 2, data len correct
+
+
         #----------------Phase 3----------------
+        #now we have to divide each l into pieces (at least 2 pieces) and insert them
 
         for k in range(0, K):
             p = sum([1 for j in range(0,h) if d[j] > In])
 
             l = G.get_substream()[k]
 
-            total = sum([x for x in d])
+            total = sum([x for x in d if x > In])
 
-            #print '---- total %d, l.len %d, sumlen %d' %(total, l.item_len(), l.item_len() + p*In)
+            if l.item_len() > 0:
 
-            if l.item_len() > 0 and l.item_len() + p*In <= total :
-                #l can be split with d_j to fill available channels
+                #logging.info('---before phase 3: G:%d D:%d L:%d' %(G.get_memberIndex(), l.get_data_index(), l.item_len()))
+                #logging.info('------p:%d total:%d' %(p, total))
+                #logging.info('------<=: %r' % (l.item_len() + p*In <= total))
 
-                for j in range(0,h):
+                if l.item_len() + p*In <= total and p > 0:
+                    #l can be split with d_j to fill available channels
 
-                    #Every l > d[j], need add index, split l, and increase the second index and pieces
-                    l.set_data_second_index(l.get_data_second_index() + 1)
-                    l.set_pieces(l.get_pieces() + 1)
+                    for j in range(0,h):
+                        if d[j] > In:
+                            if l.item_len() > d[j] - In:
 
-                    #Need to update pieces in Temp and X
-                    for p in Temp.get_substream():
-                        if p.get_data_index() == l.get_data_index():
-                            p.set_pieces(l.get_pieces())
+                                #Every l > d[j] - In, need add index, split l, and increase the second index and pieces
+                                l.set_data_second_index(l.get_data_second_index() + 1)
+                                l.set_pieces(l.get_pieces() + 1)
 
-                    for q in X:
-                        for u in q:
-                            if u.get_data_index() == l.get_data_index():
-                                p.set_pieces(l.get_pieces())                         
+                                #Need to update pieces in Temp and X
+                                for item in Temp.get_substream():
+                                    if item.get_data_index() == l.get_data_index():
+                                        item.set_pieces(l.get_pieces())
 
-                    t = DataGroupItem(l.get_group_index(), l.get_data_index(), d[j] - In, l.get_data_second_index())
-                    X[j].append(t)
+                                for q in X:
+                                    for u in q:
+                                        if u.get_data_index() == l.get_data_index():
+                                            u.set_pieces(l.get_pieces())                         
 
-                    l.set_len(l.item_len() - d[j] + In)
+                                t = DataGroupItem(l.get_group_index(), l.get_data_index(), d[j] - In, l.get_data_second_index())
+                                X[j].append(t)
 
-            elif l.item_len() > 0:
-                #We have to set A = A + 1, goto Phase 1
-                A += 1
-                #print 'A is %d' %(A)
-                Flag = True
+                                l.cut_len(d[j] - In)
 
-        #Handle X here
-        for i in X:
-            if len(i) == 1:
-                t = copy.deepcopy(i[0])
-                Temp.add_item(t)
-            elif len(i) > 1:
-                t = DataGroupItem(-1, -1, -1, -1, -1, True, i)
-                Temp.add_item(t)
+                                #logging.info('---middle_1 phase 3: G:%d D:%d L:%d d[j]:%d' %(G.get_memberIndex(), l.get_data_index(), l.item_len(), d[j]))
+                                
+                                d[j] = In
+                                if l.item_len() == 0:
+                                    break
 
+                            else:
+                                t = DataGroupItem(l.get_group_index(), l.get_data_index(), l.item_len(), l.get_data_second_index())
+                                X[j].append(t)
+
+                                l.set_len(0)
+
+                                #logging.info('---middle_2 phase 3: G:%d D:%d L:%d d[j]:%d' %(G.get_memberIndex(), l.get_data_index(), l.item_len(), d[j]))
+                                
+                                d[j] -= l.item_len()
+
+                                break
+                            
+                else:
+                    #We have to set A = A + 1, goto Phase 1
+                    A += 1
+                    Flag = True
+                    break
+
+                #logging.info('---after phase 3: G:%d D:%d L:%d' %(G.get_memberIndex(), l.get_data_index(), l.item_len()))
+
+        if not Flag:
+
+            #Handle X here
+            for i in X:
+                #only one item
+                if len(i) == 1:
+                    t = copy.deepcopy(i[0])
+                    Temp.add_item(t)
+                #several items, need to use comList
+                elif len(i) > 1:
+                    t = DataGroupItem(-1, -1, -1, -1, -1, True, i)
+                    Temp.add_item(t)
+                i[:] = []
+
+    if temp_len(Temp) != origin_len(Dmember):
+        logging.info('G:%d not same.'%Dmember.get_memberIndex())
 
     return Temp
 
@@ -689,6 +728,19 @@ def data_checker(CG_1, DG_1):
         len_temp -= Cmember.total_data_len()
 
     return len_temp
+
+def temp_len(Temp):
+    l = 0
+    for x in Temp.get_substream():
+        if x.combined:
+            for y in x.get_comlist():
+                l += y.item_len()
+        else:
+            l += x.item_len()
+    return l
+
+def origin_len(G):
+    return sum([x.item_len() for x in G.get_substream()])
 
 
 
@@ -740,9 +792,11 @@ if __name__ == '__main__':
 
     #SDAA(G2,U)
 
+    #print data_checker(SDAA(G2,U), G2)
+
     print '\n-----------------------\n COA assignment result:'
 
-    print data_checker(SDAA(G3,U), G3)
+    print('len diff:%d' %data_checker(SDAA(G3,U), G3))
 
 
         
