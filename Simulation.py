@@ -11,28 +11,28 @@ import math
 #                                                                                #
 ##################################################################################
 
-#No. of the channels in the system
+# No. of the channels in the system
 N = 10
 
-#No. of the data items in a program
+# No. of the data items in a program
 P = 6
 
-#No. of quality requirements
+# No. of quality requirements
 K = 3
 
-#Channel constraint for one client
+# Channel constraint for one client
 U = 5
 
-#Channel broadcast rate
+# Channel broadcast rate
 R = 100
 
-#No. of channel groups T = N/K or T = N/U
+# No. of channel groups T = N/K or T = N/U
 T = 0
 
-#Group of data groups
+# Group of data groups
 G = []
 
-#Length of the index
+# Length of the index
 In = 1
 
 ##################################################################################
@@ -46,30 +46,31 @@ In = 1
 
 class DataGroupItem(object):
 
-    def __init__(self, Gindex, Dindex, length, Sindex = -1, Pieces = 1, Combined = False, ComList = None):
+    def __init__(self, Gindex, Dindex, length, Sindex = -1, Pieces = 1, \
+                    Combined = False, ComList = None):
 
-        #Dindex: -1 hole
-        #1,2... data     
+        # Dindex: -1 hole
+        # 1,2... data
         self.data_index = Dindex
 
-        #Sindex: -1 only one piece
-        #-2 index
-        #0,1,2... more than one pieces
+        # Sindex: -1 only one piece
+        # -2 index
+        # 0,1,2... more than one pieces
         self.data_second_index = Sindex
 
         self.data_length = length
 
-        #Gindex: -1 hole
-        #1,2... data
+        # Gindex: -1 hole
+        # 1,2... data
         self.group_index = Gindex
 
-        #Combined: False only one piece
-        #True several pieces are combined together
-        #ComList is used to pass the list where the pieces are stored
+        # Combined: False only one piece
+        # True several pieces are combined together
+        # ComList is used to pass the list where the pieces are stored
         self.combined = Combined
         self.comlist = copy.deepcopy(ComList)
 
-        #Pieces: No. of pieces a data is divided into
+        # Pieces: No. of pieces a data is divided into
         self.pieces = Pieces
 
     def get_pieces(self):
@@ -86,11 +87,14 @@ class DataGroupItem(object):
 
     def print_item(self):
         if not self.combined:
-            print '    G%d Q%d S%d P%d: %d'%(self.group_index, self.data_index, self.data_second_index, self.pieces, self.data_length)
+            print '    G%d Q%d S%d P%d: %d'%(self.group_index, self.data_index, \
+                self.data_second_index, self.pieces, self.data_length)
         else:
             print '    Combined:'
             for x in range(0,len(self.comlist)):
-                print '      G%d Q%d S%d P%d: %d'%(self.comlist[x].group_index, self.comlist[x].data_index, self.comlist[x].data_second_index, self.comlist[x].pieces, self.comlist[x].data_length)
+                print '      G%d Q%d S%d P%d: %d'%(self.comlist[x].group_index, \
+                    self.comlist[x].data_index, self.comlist[x].data_second_index, \
+                    self.comlist[x].pieces, self.comlist[x].data_length)
 
     def item_len(self):
         return self.data_length
@@ -119,11 +123,13 @@ class DataGroupMember(object):
         self.subStream = []
         self.member_index = Gindex
 
-        #Generate the items of a data group
-        #Here using random generation-------------------------need modification
-        #The range is (30,100), because of the requirement of 1/5 approximation algorithm in ISDAA
+        # Generate the items of a data group
+        # Here using random generation-------------------------need modification
+        # The range is (30,100), because of the requirement of 
+        # 1/5 approximation algorithm in ISDAA
         for j in range(1,K+1):
-            self.subStream.append(DataGroupItem(self.member_index, j, random.randint(30,100)))
+            self.subStream.append(DataGroupItem(self.member_index, j, \
+                random.randint(30,100)))
 
     def print_member(self):
         for i in self.subStream:
@@ -167,8 +173,8 @@ class DataGroup(object):
         
         if empty == False:
 
-            #Generate the Group of data groups
-            #Here using random generation-------------------------need modification
+            # Generate the Group of data groups
+            # Here using random generation-------------------------need modification
             for i in range(1,P+1):
                 self.G_1.append(DataGroupMember(i))
 
@@ -185,6 +191,13 @@ class DataGroup(object):
 
     def add_member(self,a):
         self.G_1.append(a)
+
+    def del_member(self,*x):
+        for a in x:
+            for index in range(0, len(self.G_1)):
+                if G_1[index].get_memberIndex() == a.get_memberIndex():
+                    del self.G_1[index]
+                    break
 
     def get_G1(self):
         return self.G_1
@@ -228,7 +241,8 @@ class ChannelGroupItem(object):
         return self.chan_length
 
     def data_len(self):
-        return sum([x.item_len() for x in self.chan_contain if x.get_data_index() > 0 and x.get_data_second_index() > -2 ])
+        return sum([x.item_len() for x in self.chan_contain if x.get_data_index() > 0 \
+            and x.get_data_second_index() > -2 ])
 
 class ChannelGroupMember(object):
 
@@ -256,28 +270,30 @@ class ChannelGroupMember(object):
 
         for i in range(0,len(sub)):
 
-            #Not combined
+            # Not combined
             if  not sub[i].is_combined():
                 if sub[i].get_data_second_index() != -1:
 
-                    #Insert the index
-                    temp = DataGroupItem(sub[i].get_group_index(), sub[i].get_data_index(), In, -2, sub[i].get_pieces())
+                    # Insert the index
+                    temp = DataGroupItem(sub[i].get_group_index(), sub[i].get_data_index(),\
+                                            In, -2, sub[i].get_pieces())
                     self.G_2[i].insert_data(temp)
                     
                 self.G_2[i].insert_data(sub[i])
 
-            #Combined
+            # Combined
             else:
                 for x in sub[i].get_comlist():
                     if x.get_data_second_index() != -1:
 
-                        #Add the index
-                        temp = DataGroupItem(x.get_group_index(), x.get_data_index(), In, -2, sub[i].get_pieces())
+                        # Add the index
+                        temp = DataGroupItem(x.get_group_index(), x.get_data_index(), \
+                                                In, -2, sub[i].get_pieces())
                         self.G_2[i].insert_data(temp)
 
                     self.G_2[i].insert_data(x)
 
-        #insert the hole to occupy the channel
+        # insert the hole to occupy the channel
         m = max(self.G_2, key = lambda x:x.item_len()).item_len()
         
         for i in self.G_2:
@@ -298,12 +314,12 @@ class ChannelGroup(object):
 
     def print_groups(self):
         for i in range(1,T+1):
-            print '\nGroup %d:' %(i)
+            print 'Group %d:' %(i)
             self.G_3[i-1].print_member()
 
     def print_grouplen(self):
         for i in range(1, T+1):
-            print '\nGroup %d: len %d' %(i, self.G_3[i-1].member_len())
+            print 'Group %d: len %d' %(i, self.G_3[i-1].member_len())
 
     def min_member(self):
         return min(self.G_3, key = lambda x:x.member_len())
@@ -319,8 +335,8 @@ class ChannelGroup(object):
 ##################################################################################
 
 
-#SDAA----------Simple Data Allocation Algorithm
-#G_11 is the data group, X is the number of items in each data group member
+# SDAA----------Simple Data Allocation Algorithm
+# G_11 is the data group, X is the number of items in each data group member
 def SDAA(G_11,X):
 
     global T, N, P
@@ -338,63 +354,191 @@ def SDAA(G_11,X):
         s = CG.min_member()
         s.append_dataGroup(G_1.get_member(i))
 
-    print '\nThe assigned channel groups are:'
-    #CG.print_groups()
+    # print '\nThe assigned channel groups are:'
+    # CG.print_groups()
     CG.print_grouplen()
 
     return CG
 
 
+# ISDAA----------Improved Simple Data Allocation Algorithm
 
-#ISDAA----------Improved Simple Data Allocation Algorithm
+# The algorithm given by paper is not identical to the original algorithm!!!!!!!!!!!!!!
+def SIZE(G):
+    global N
+    return max([sum([x.max_len() for x in G])/float(N), max([x.max_len() for x in G])])
 
-#The algorithm given by paper is not identical to the original algorithm!!!!!!!!!!!!!!
-def SIZE(G,P):
-    return max([sum([x.max_len() for x in G])/float(P), max([x.max_len() for x in G])])
+def SCALE(G, d):
+    temp = copy.deepcopy(G)
+    for x in temp.get_G1():
+        for i in x.get_substream():
+            x.set_len(x.item_len()/float(d))
 
-def DUAL(G, d, X):
-    global T, N, P, U, K
+    return temp
+
+def findInL(G, u):
+    big = None
+    first = True
+    for x in G.get_G1():
+        if x.max_len() <= u and first:
+            big = x
+            first = False
+        if x.max_len() <= u and x.max_len() > big.max_len():
+            big = x
+    return big
+
+# The dual approximation algorithm for Bin Packing
+def DUAL(scaled_G_1):
+
+    sG = copy.deepcopy(scaled_G_1)
+    
+    # The channel group is scalable here
+    CG = []
+
+    # Divide the data > 1/5 and <= 1/5
+
+    sG_1 = DataGroup(True)
+    sG_2 = DataGroup(True)
+
+    for x in sG.get_G1():
+        if x.maxlen() > 1/float(5):
+            sG_1.add_member(x)
+        else:
+            sG_2.add_member(x)
+
+    '''
+    The dual algorithm has two parts: one is the assumed algorithm to pack all
+    of the pieces with size > 1/5; the other one is to pack the remaining pieces 
+    of size <= 1/5.
+    '''
+
+    # Step 1: assumed algorithm 
+
+    # Stage 1
+    for x in sG_1.get_G1():
+        if x.max_len() >= 0.6 and x.max_len() <= 1:
+            y = findInL(sG_1, 1 - x.max_len())
+            if y != None:
+                CG.append([x, y])
+                sG_1.del_member(y)
+            else:
+                CG.append([x])
+            sG_1.del_member(x)
+
+
+    # Stage 2
+    for x in sG_1.get_G1():
+        if x.max_len() >= 0.5 and x.max_len() < 0.6:
+            hasY = False
+            for y in sG_1.get_G1():
+                if y.max_len() >= 0.5 and y.max_len() < 0.6 and \
+                    y.get_memberIndex() != x.get_memberIndex():
+                    hasY = True
+                    CG.append([x, y])
+                    sG_1.del_member(y)
+                    break
+            if not hasY:
+                CG.append([x])
+            sG_1.del_member(x)
+
+    # Stage 3
+    while True:
+        x_3 = findInL(sG_1, 0.5)
+        x_2 = findInL(sG_1, 0.4)
+        x_1 = findInL(sG_1, 0.3)
+        if x_1 == None or x_2 == None or x_3 == None or x_3.max_len() >= 0.4 or \
+            x_3.get_memberIndex() == x_2.get_memberIndex() or \
+            x_2.get_memberIndex() == x_1.get_memberIndex() or \
+            x_1.get_memberIndex() == x_3.get_memberIndex():
+            break
+        temp = [x_1, x_2, x_3]
+        CG.append(temp)
+        sG_1.del_member(*temp)
+
+    # Stage 4
+    sG_1.get_G1().sort(key = lambda x:x.max_len(), reverse = True)
+    while True:
+        x_1 = sG_1.get_G1()[0]
+        if x_1.max_len() < 0.4:
+            break
+        temp = [x_1, sG_1.get_G1()[1]]
+        CG.append(temp)
+        sG_1.del_member(*temp)
+
+    # Stage 5
+    while True:
+        sG_1.get_G1().sort(key = lambda x:x.max_len())
+        small = sG_1.get_G1()[0]
+
+        if small.max_len() <= 0.25:
+            k = 0.25 - small.max_len()
+            x_1 = findInL(sG_1, 0.25 + 3*k)
+            x_2 = findInL(sG_1, 0.25 + k)
+            x_3 = findInL(sG_1, 0.25 + k/3)
+            temp_1 = [small, x_1, x_2, x_3]
+            flag = False
+            for x in range(0, 4):
+                for y in range(x + 1, 4):
+                    if temp_1[x].get_memberIndex() == temp_1[y].get_memberIndex():
+                        flag = True
+                        x = 4
+                        break
+            if not flag:
+                CG.append(temp_1)
+                sG_1.del_member(*temp_1)
+                continue
+
+        while len(sG_1.get_G1()) >= 3:
+            small = sG_1.get_G1()[0]
+            temp = [small, sG_1.get_G1()[1], sG_1.get_G1()[2]]
+            CG.append(temp)
+            sG_1.del_member(*temp)
+        CG.append(sG_1.get_G1())
+        sG_1.del_member(sG_1.get_G1())
+        break
+
+    # Step 2: remaining pieces with size <= 1/5
+
+    for remain in range(0, len(sG_2.get_G1())):
+        hasBin = False
+        for bin in CG:
+            if sum([x.max_len() for x in bin]) <= 1:
+                hasBin = True
+                temp = sG_2.get_G1()[remain]
+                bin.append(temp)
+                sG_2.del_member(temp)
+        if not hasBin:
+            temp = sG_2.get_G1()[remain]
+            CG.append([temp])
+            sG_2.del_member(temp)
+
+
+def ISDAA(DG_1, X):
+
+    global T, N, P
 
     T = N/X
     M = N/T
 
-    Temp = copy.deepcopy(G)
-
-    #Scale the pieces
-    for x in Temp.get_G1():
-        for i in x.get_substream():
-            x.set_len(x.item_len()/float(d))
-
-    CG = ChannelGroup(M)
-    
-    
-
-
-def ISDAA(DG_1, CG_1, P, M, T):
     DG = copy.deepcopy(DG_1)
-    CG = copy.deepcopy(CG_1)
 
-    lower = SIZE(DG,P)
+    lower = SIZE(DG)
     upper = 2*lower
 
-    while upper != lower:
+    while abs(upper - lower) > 0.001:
         d = (upper+lower)/float(2)
-        dual = DUAL(DG, d)
-        if dual > P:
+        dual = DUAL(SCALE(DG, d))[0]
+        if dual > N:
             lower = d
         else:
             upper = d
-    
-    output = upper
 
-    DUAL(DG, output)
-
-    return output
+    return DUAL(SCALE(DG, upper))[1]
 
 
 
 
-#MDAA----------Modified Data Allocation Algorithm
+# MDAA----------Modified Data Allocation Algorithm
 def MDAA(Dmember):
 
     global K,U
@@ -424,7 +568,7 @@ def MDAA(Dmember):
 
 
 
-#AEA------------Average Estimation Algorithm
+# AEA------------Average Estimation Algorithm
 def AEA(Dmember):
 
     global U,K
@@ -481,7 +625,8 @@ def AEA(Dmember):
                 if s.get_pieces() > 1:
                     s.set_data_second_index(s.get_data_second_index() + 1)
                     
-                t = DataGroupItem(s.get_group_index(), s.get_data_index(), Aw, s.get_data_second_index(), s.get_pieces())
+                t = DataGroupItem(s.get_group_index(), s.get_data_index(), Aw,\
+                                    s.get_data_second_index(), s.get_pieces())
                 Temp.add_item(t)
 
             h -= n[k]
@@ -492,11 +637,11 @@ def AEA(Dmember):
     max_item = 0
     max_index = 0
 
-    #Available channel exists
+    # Available channel exists
     while h > 0:
         first = False
 
-        #Find the max one
+        # Find the max one
         for i in range(0,K):
             s = G.get_substream()[i]
 
@@ -517,13 +662,13 @@ def AEA(Dmember):
         n[max_index] += 1
         h -= 1
 
-    #No available channel exists
+    # No available channel exists
     for i in range(0,K):
         s = G.get_substream()[i]
 
         if s.item_len() > 0:
         
-            #Distributed value of remaining I_i
+            # Distributed value of remaining I_i
             value = s.item_len() / n[i]
             value_ = value
             assigned = False
@@ -531,7 +676,7 @@ def AEA(Dmember):
             if s.item_len() % n[i] != 0:
                 value_ += s.item_len() % n[i]
 
-            #Assign value to the previous channels of I_i
+            # Assign value to the previous channels of I_i
             for j in Temp.get_substream():
                 if j.get_data_index() == s.get_data_index():
                     if not assigned:
@@ -541,14 +686,14 @@ def AEA(Dmember):
                     j.set_data_second_index(j.get_data_second_index() - 1)
                     j.set_pieces(j.get_pieces() - 1)
 
-            #Delete I_i
+            # Delete I_i
             s.set_len(0)
 
     return Temp
 
 
 
-#COA------------Channel Overlapping Algorithm
+# COA------------Channel Overlapping Algorithm
 def COA(Dmember):
 
     global U,K,In
@@ -561,7 +706,7 @@ def COA(Dmember):
 
     while Flag:
 
-        #logging.info('D:%d A:%d\n' %(Dmember.get_memberIndex(), A))
+        # logging.info('D:%d A:%d\n' %(Dmember.get_memberIndex(), A))
 
         Flag = False
 
@@ -593,21 +738,22 @@ def COA(Dmember):
 
             l.cut_len(n[k]*A)
             
-            #Add item to Temp, each of the items has length of A
+            # Add item to Temp, each of the items has length of A
             for i in range(0,n[k]):
 
                 if l.get_pieces() > 1:
                     l.set_data_second_index(l.get_data_second_index() + 1)
 
-                t = DataGroupItem(l.get_group_index(), l.get_data_index(), A, l.get_data_second_index(), l.get_pieces())
+                t = DataGroupItem(l.get_group_index(), l.get_data_index(), A, \
+                                    l.get_data_second_index(), l.get_pieces())
                 Temp.add_item(t)
 
         h = U - sum([x for x in n])
 
-        #After phase 1, data len correct
+        # After phase 1, data len correct
 
         #----------------Phase 2----------------
-        #Insert the remaining l as a whole, then set l to 0.
+        # Insert the remaining l as a whole, then set l to 0.
 
         G.get_substream().sort(key = lambda x:x.item_len(), reverse = True)
 
@@ -632,11 +778,11 @@ def COA(Dmember):
 
                         break
 
-        #After phase 2, data len correct
+        # After phase 2, data len correct
 
 
         #----------------Phase 3----------------
-        #now we have to divide each l into pieces (at least 2 pieces) and insert them
+        # now we have to divide each l into pieces (at least 2 pieces) and insert them
 
         for k in range(0, K):
             p = sum([1 for j in range(0,h) if d[j] > In])
@@ -647,22 +793,24 @@ def COA(Dmember):
 
             if l.item_len() > 0:
 
-                #logging.info('---before phase 3: G:%d D:%d L:%d' %(G.get_memberIndex(), l.get_data_index(), l.item_len()))
-                #logging.info('------p:%d total:%d' %(p, total))
-                #logging.info('------<=: %r' % (l.item_len() + p*In <= total))
+                # logging.info('---before phase 3: G:%d D:%d L:%d' %(G.get_memberIndex(), \
+                #               l.get_data_index(), l.item_len()))
+                # logging.info('------p:%d total:%d' %(p, total))
+                # logging.info('------<=: %r' % (l.item_len() + p*In <= total))
 
                 if l.item_len() + p*In <= total and p > 0:
-                    #l can be split with d_j to fill available channels
+                    # l can be split with d_j to fill available channels
 
                     for j in range(0,h):
                         if d[j] > In:
                             if l.item_len() > d[j] - In:
 
-                                #Every l > d[j] - In, need add index, split l, and increase the second index and pieces
+                                # Every l > d[j] - In, need add index, split l, and increase 
+                                # the second index and pieces
                                 l.set_data_second_index(l.get_data_second_index() + 1)
                                 l.set_pieces(l.get_pieces() + 1)
 
-                                #Need to update pieces in Temp and X
+                                # Need to update pieces in Temp and X
                                 for item in Temp.get_substream():
                                     if item.get_data_index() == l.get_data_index():
                                         item.set_pieces(l.get_pieces())
@@ -672,46 +820,51 @@ def COA(Dmember):
                                         if u.get_data_index() == l.get_data_index():
                                             u.set_pieces(l.get_pieces())                         
 
-                                t = DataGroupItem(l.get_group_index(), l.get_data_index(), d[j] - In, l.get_data_second_index())
+                                t = DataGroupItem(l.get_group_index(), l.get_data_index(), d[j] - In,\
+                                                     l.get_data_second_index())
                                 X[j].append(t)
 
                                 l.cut_len(d[j] - In)
 
-                                #logging.info('---middle_1 phase 3: G:%d D:%d L:%d d[j]:%d' %(G.get_memberIndex(), l.get_data_index(), l.item_len(), d[j]))
+                                # logging.info('---middle_1 phase 3: G:%d D:%d L:%d d[j]:%d' \
+                                #   %(G.get_memberIndex(), l.get_data_index(), l.item_len(), d[j]))
                                 
                                 d[j] = In
                                 if l.item_len() == 0:
                                     break
 
                             else:
-                                t = DataGroupItem(l.get_group_index(), l.get_data_index(), l.item_len(), l.get_data_second_index())
+                                t = DataGroupItem(l.get_group_index(), l.get_data_index(), l.item_len(),\
+                                                    l.get_data_second_index())
                                 X[j].append(t)
 
                                 l.set_len(0)
 
-                                #logging.info('---middle_2 phase 3: G:%d D:%d L:%d d[j]:%d' %(G.get_memberIndex(), l.get_data_index(), l.item_len(), d[j]))
+                                # logging.info('---middle_2 phase 3: G:%d D:%d L:%d d[j]:%d' 
+                                #           %(G.get_memberIndex(), l.get_data_index(), l.item_len(), d[j]))
                                 
                                 d[j] -= l.item_len()
 
                                 break
                             
                 else:
-                    #We have to set A = A + 1, goto Phase 1
+                    # We have to set A = A + 1, goto Phase 1
                     A += 1
                     Flag = True
                     break
 
-                #logging.info('---after phase 3: G:%d D:%d L:%d' %(G.get_memberIndex(), l.get_data_index(), l.item_len()))
+                # logging.info('---after phase 3: G:%d D:%d L:%d' %(G.get_memberIndex(),\
+                #               l.get_data_index(), l.item_len()))
 
         if not Flag:
 
-            #Handle X here
+            # Handle X here
             for i in X:
-                #only one item
+                # only one item
                 if len(i) == 1:
                     t = copy.deepcopy(i[0])
                     Temp.add_item(t)
-                #several items, need to use comList
+                # several items, need to use comList
                 elif len(i) > 1:
                     t = DataGroupItem(-1, -1, -1, -1, -1, True, i)
                     Temp.add_item(t)
@@ -767,46 +920,46 @@ def origin_len(G):
 
 if __name__ == '__main__':
 
-    #Original data group
+    # Original data group
     G = DataGroup(False)
 
     print '\n------------------\nOriginal data group:'
     G.print_groups()
 
-    #Empty data group
+    # Empty data group
     G1 = DataGroup(True)
     G2 = DataGroup(True)
     G3 = DataGroup(True)
 
-    #Using MDAA to append member to G1
+    # Using MDAA to append member to G1
     for i in range(0,P):
         I = copy.deepcopy(MDAA(G.get_member(i)))
         G1.add_member(I)
 
-    #Using AEA to append member to G2
+    # Using AEA to append member to G2
     for i in range(0,P):
         I = copy.deepcopy(AEA(G.get_member(i)))
         G2.add_member(I)
 
 
-    #Using COA to append member to G3
+    # Using COA to append member to G3
     for i in range(0,P):
         I = copy.deepcopy(COA(G.get_member(i)))
         G3.add_member(I)
 
-    print '\n-----------------------\n SDAA assignment result:'
+    print '\n-----------------------\nSDAA assignment result:'
 
     print('SDAA len diff:%d' %data_checker(SDAA(G,K), G))
 
-    print '\n-----------------------\n MDAA assignment result:'
+    print '\n-----------------------\nMDAA assignment result:'
 
     print('MDAA len diff:%d' %data_checker(SDAA(G1,U), G1))
 
-    print '\n-----------------------\n AEA assignment result:'
+    print '\n-----------------------\nAEA assignment result:'
 
     print('AEA len diff:%d' %data_checker(SDAA(G2,U), G2))
 
-    print '\n-----------------------\n COA assignment result:'
+    print '\n-----------------------\nCOA assignment result:'
 
     print('COA len diff:%d' %data_checker(SDAA(G3,U), G3))
 
