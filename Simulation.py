@@ -49,6 +49,8 @@ class DataGroupItem(object):
     def __init__(self, Gindex, Dindex, length, Sindex = -1, Pieces = 1, \
                     Combined = False, ComList = None):
 
+        global In
+
         # Dindex: -1 hole
         # 1,2... data
         self.data_index = Dindex
@@ -58,7 +60,22 @@ class DataGroupItem(object):
         # 0,1,2... more than one pieces
         self.data_second_index = Sindex
 
+        self.data_indexed_length = length
+        if Combined:
+            temp = 0
+            for x in ComList:
+                temp += x.indexed_item_len()
+            self.data_indexed_length = temp
+        else:
+            if Sindex >= 0:
+                self.data_indexed_length += In
+
         self.data_length = length
+        if Combined:
+            temp = 0
+            for x in ComList:
+                temp += x.item_len()
+            self.data_length = temp
 
         # Gindex: -1 hole
         # 1,2... data
@@ -99,8 +116,14 @@ class DataGroupItem(object):
     def item_len(self):
         return self.data_length
 
+    def indexed_item_len(self):
+        return self.data_indexed_length
+
     def set_len(self,x):
         self.data_length = x
+
+    def set_indexed_len(self, x):
+        self.data_indexed_length = x
 
     def get_data_index(self):
         return self.data_index
@@ -136,16 +159,12 @@ class DataGroupMember(object):
             i.print_item()
 
     def max_len(self):
-        return max(self.subStream, key = lambda x:x.item_len()).item_len()
+        return max(self.subStream, key = lambda x:x.indexed_item_len()).indexed_item_len()
 
     def total_len(self):
         temp_len = 0
         for x in self.subStream:
-            if x.combined:
-                for y in x.get_comlist():
-                    temp_len += y.item_len()
-            else:
-                temp_len += x.item_len()
+            temp_len += x.item_len()
         return temp_len
 
     def get_substream(self):
@@ -195,7 +214,7 @@ class DataGroup(object):
     def del_member(self,*x):
         for a in x:
             for index in range(0, len(self.G_1)):
-                if G_1[index].get_memberIndex() == a.get_memberIndex():
+                if self.G_1[index].get_memberIndex() == a.get_memberIndex():
                     del self.G_1[index]
                     break
 
@@ -366,16 +385,17 @@ def SDAA(G_11,X):
 # The algorithm given by paper is not identical to the original algorithm!!!!!!!!!!!!!!
 def SIZE(G):
     global N
-    return max([sum([x.max_len() for x in G])/float(N), max([x.max_len() for x in G])])
+    return max([sum([x.max_len() for x in G.get_G1()])/float(N), max([x.max_len() for x in G.get_G1()])])
 
 def SCALE(G, d):
     temp = copy.deepcopy(G)
     for x in temp.get_G1():
         for i in x.get_substream():
-            x.set_len(x.item_len()/float(d))
+            i.set_indexed_len(i.indexed_item_len()/float(d))
 
     return temp
 
+# Function for L[u_1, ..., u_k]
 def findInL(G, u):
     big = None
     first = True
@@ -388,6 +408,9 @@ def findInL(G, u):
     return big
 
 # The dual approximation algorithm for Bin Packing
+# Returns [x, y]
+# x is the total number of bins
+# y is the actual schedual of bin-packing
 def DUAL(scaled_G_1):
 
     sG = copy.deepcopy(scaled_G_1)
@@ -401,7 +424,7 @@ def DUAL(scaled_G_1):
     sG_2 = DataGroup(True)
 
     for x in sG.get_G1():
-        if x.maxlen() > 1/float(5):
+        if x.max_len() > 1/float(5):
             sG_1.add_member(x)
         else:
             sG_2.add_member(x)
@@ -425,7 +448,6 @@ def DUAL(scaled_G_1):
                 CG.append([x])
             sG_1.del_member(x)
 
-
     # Stage 2
     for x in sG_1.get_G1():
         if x.max_len() >= 0.5 and x.max_len() < 0.6:
@@ -441,8 +463,9 @@ def DUAL(scaled_G_1):
                 CG.append([x])
             sG_1.del_member(x)
 
+
     # Stage 3
-    while True:
+    while len(sG_1.get_G1()) >= 1:
         x_3 = findInL(sG_1, 0.5)
         x_2 = findInL(sG_1, 0.4)
         x_1 = findInL(sG_1, 0.3)
@@ -455,18 +478,24 @@ def DUAL(scaled_G_1):
         CG.append(temp)
         sG_1.del_member(*temp)
 
+
     # Stage 4
     sG_1.get_G1().sort(key = lambda x:x.max_len(), reverse = True)
-    while True:
+    while len(sG_1.get_G1()) >= 1:
         x_1 = sG_1.get_G1()[0]
         if x_1.max_len() < 0.4:
             break
-        temp = [x_1, sG_1.get_G1()[1]]
-        CG.append(temp)
-        sG_1.del_member(*temp)
+        if len(sG_1.get_G1()) >= 2:
+            temp = [x_1, sG_1.get_G1()[1]]
+            CG.append(temp)
+            sG_1.del_member(*temp)
+        else:
+            CG.append([x_1])
+            sG_1.del_member(x_1)
 
     # Stage 5
-    while True:
+    while len(sG_1.get_G1()) >= 1:
+
         sG_1.get_G1().sort(key = lambda x:x.max_len())
         small = sG_1.get_G1()[0]
 
@@ -478,6 +507,9 @@ def DUAL(scaled_G_1):
             temp_1 = [small, x_1, x_2, x_3]
             flag = False
             for x in range(0, 4):
+                if temp_1[x] == None:
+                    flag = True
+                    break
                 for y in range(x + 1, 4):
                     if temp_1[x].get_memberIndex() == temp_1[y].get_memberIndex():
                         flag = True
@@ -493,11 +525,18 @@ def DUAL(scaled_G_1):
             temp = [small, sG_1.get_G1()[1], sG_1.get_G1()[2]]
             CG.append(temp)
             sG_1.del_member(*temp)
-        CG.append(sG_1.get_G1())
-        sG_1.del_member(sG_1.get_G1())
-        break
+
+        if len(sG_1.get_G1()) > 0:
+            temp = []
+            for x in sG_1.get_G1():
+                temp.append(x)
+            CG.append(temp)
+            sG_1.del_member(*temp)
+            
 
     # Step 2: remaining pieces with size <= 1/5
+
+    #logging.info('Check: len(sG_1):%d len(sG_2):%d' %(len(sG_1.get_G1()),len(sG_2.get_G1())))
 
     for remain in range(0, len(sG_2.get_G1())):
         hasBin = False
@@ -512,7 +551,9 @@ def DUAL(scaled_G_1):
             CG.append([temp])
             sG_2.del_member(temp)
 
+    return [len(CG), CG]
 
+# Improved SDAA using dual approximation algorithm
 def ISDAA(DG_1, X):
 
     global T, N, P
@@ -525,17 +566,27 @@ def ISDAA(DG_1, X):
     lower = SIZE(DG)
     upper = 2*lower
 
-    while abs(upper - lower) > 0.001:
+    dual = 0
+
+    while abs(upper - lower) > 0.0000000001:
         d = (upper+lower)/float(2)
         dual = DUAL(SCALE(DG, d))[0]
-        if dual > N:
+        if dual > T:
             lower = d
         else:
             upper = d
 
-    return DUAL(SCALE(DG, upper))[1]
+    final = DUAL(SCALE(DG, upper))[1]
+    
+    print '++++++++++++++++++++++++++++\n'
+    print 'dual:%d T:%d upper:%.10f lower:%.10f'%(dual, T, upper, lower)
 
-
+    for x in range(0, len(final)):
+        print 'Line %d:'%(x+1)
+        for y in final[x]:
+            print '\tMemberIndex:%d' %y.get_memberIndex()
+        print'\tLen:%.10f' %sum([y.max_len() for y in final[x]])
+            
 
 
 # MDAA----------Modified Data Allocation Algorithm
@@ -899,11 +950,7 @@ def data_checker(CG_1, DG_1):
 def temp_len(Temp):
     l = 0
     for x in Temp.get_substream():
-        if x.combined:
-            for y in x.get_comlist():
-                l += y.item_len()
-        else:
-            l += x.item_len()
+        l += x.item_len()
     return l
 
 def origin_len(G):
@@ -947,6 +994,13 @@ if __name__ == '__main__':
         I = copy.deepcopy(COA(G.get_member(i)))
         G3.add_member(I)
 
+    print '\n-----------------------\nISDAA assignment result:'
+
+    ISDAA(G, K)
+
+    #print('ISDAA len diff:%d' %data_checker(ISDAA(G, K), G))
+
+    '''
     print '\n-----------------------\nSDAA assignment result:'
 
     print('SDAA len diff:%d' %data_checker(SDAA(G,K), G))
@@ -962,7 +1016,7 @@ if __name__ == '__main__':
     print '\n-----------------------\nCOA assignment result:'
 
     print('COA len diff:%d' %data_checker(SDAA(G3,U), G3))
-
+    '''
 
         
 
