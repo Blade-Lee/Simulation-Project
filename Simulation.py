@@ -12,28 +12,25 @@ import math
 ##################################################################################
 
 # No. of the channels in the system
-N = 20
+N = 0
 
 # No. of the data items in a program
-P = 100
+P = 0
 
 # No. of quality requirements
-K = 4
+K = 0
 
 # Channel constraint for one client
-U = 5
+U = 0
 
 # Channel broadcast rate
-R = 100
+R = 0
 
 # No. of channel groups T = N/K or T = N/U
 T = 0
 
-# Group of data groups
-G = []
-
 # Length of the index
-In = 1
+In = 0
 
 ##################################################################################
 #                                                                                #
@@ -152,7 +149,7 @@ class DataGroupMember(object):
         # 1/5 approximation algorithm in ISDAA
         for j in range(1,K+1):
             self.subStream.append(DataGroupItem(self.member_index, j, \
-                random.randint(30,100)))
+                random.randint(30,1000)))
 
     def print_member(self):
         for i in self.subStream:
@@ -343,6 +340,13 @@ class ChannelGroup(object):
             if temp > max:
                 max = temp
             print 'Group %d: len %d' %(i, temp)
+
+    def print_maxlen(self):
+        max = 0
+        for i in range(1, T+1):
+            temp = self.G_3[i-1].member_len()
+            if temp > max:
+                max = temp
         print 'Max: %d' %max
 
     def min_member(self):
@@ -380,7 +384,8 @@ def SDAA(G_11,X):
 
     # print '\nThe assigned channel groups are:'
     #CG.print_groups()
-    CG.print_grouplen()
+    #CG.print_grouplen()
+    CG.print_maxlen()
 
     return CG
 
@@ -428,11 +433,17 @@ def DUAL(scaled_G_1):
     sG_1 = DataGroup(True)
     sG_2 = DataGroup(True)
 
+    count = 0
+    count_1 = 0
     for x in sG.get_G1():
+        count += 1
         if x.max_len() > 1/float(5):
+            count_1 += 1
             sG_1.add_member(x)
         else:
             sG_2.add_member(x)
+
+    percent = count_1*100/float(count)
 
     #logging.info('Len_1:%d Len_2:%d'%(len(sG_1.get_G1()), len(sG_2.get_G1())))
 
@@ -557,7 +568,7 @@ def DUAL(scaled_G_1):
         if not hasBin:
             CG.append([remain])
 
-    return [len(CG), CG]
+    return [len(CG), CG, percent]
 
 # Improved SDAA using dual approximation algorithm
 def ISDAA(DG_1, X):
@@ -582,7 +593,11 @@ def ISDAA(DG_1, X):
         else:
             upper = d
 
-    final = DUAL(SCALE(DG, upper))[1]
+    answer = DUAL(SCALE(DG, upper))
+
+    final = answer[1]
+
+    percent = answer[2]
     
     #print '++++++++++++++++++++++++++++\n'
     #print 'dual:%d T:%d upper:%.10f lower:%.10f'%(dual, T, upper, lower)
@@ -608,7 +623,9 @@ def ISDAA(DG_1, X):
                     Member.append_dataGroup(select)
 
     #CG.print_groups()
-    CG.print_grouplen()
+    #CG.print_grouplen()
+    CG.print_maxlen()
+    print 'DUAL Percent of > 1/5: %.2f%%' %percent
 
     return CG
             
@@ -983,14 +1000,18 @@ def origin_len(G):
 
 
 
-
 ##################################################################################
 #                                                                                #
 #                         ALGORITHM IMPLEMENTATION                               #
 #                                                                                #
-##################################################################################    
+##################################################################################
 
-if __name__ == '__main__':
+func_list = ((SDAA, None, 'SDAA'), (ISDAA, None, 'ISDAA'), \
+            (SDAA, MDAA, 'SDAA-MDAA'), (ISDAA, MDAA, 'ISDAA-MDAA'), \
+            (SDAA, AEA, 'SDAA-AEA'), (ISDAA, AEA, 'ISDAA-AEA'), \
+            (SDAA, COA, 'SDAA-COA'), (ISDAA, COA, 'ISDAA-COA'))
+
+def generate_groups():
 
     # Original data group
     G = DataGroup(False)
@@ -1003,7 +1024,6 @@ if __name__ == '__main__':
     G2 = DataGroup(True)
     G3 = DataGroup(True)
 
-    
     for i in range(0,P):
 
         # Using MDAA to append member to G1
@@ -1017,55 +1037,98 @@ if __name__ == '__main__':
         # Using COA to append member to G3
         I_3 = copy.deepcopy(COA(G.get_member(i)))
         G3.add_member(I_3)
-        
 
-    ###################### original ########################
+    return (G, G1, G2, G3)
+
+def select_func(num, *G):
+
+    global K, U
+
+    select = func_list[num]
+
+    print '\n-----------------------\n%s:' %select[2]
+
+    Group = 0
+    limit = 0
+
+    if select[1] == None:
+        limit = K
+        Group = G[0]
+    else:
+        limit = U
+        if select[1] == MDAA:
+            Group = G[1]
+        elif select[1] == AEA:
+            Group = G[2]
+        else:
+            Group = G[3]
+
+    run = select[0](Group,limit)
+
+    temp = data_checker(run, Group)
+    if temp != 0:
+        print('%s wrong result:%d' %(select[2], temp))
+
+def set_param(N_1, P_1, K_1, U_1, In_1, R_1):
+
+    global N, P, K, U, In, R
+
+    # No. of the channels in the system
+    N = N_1
+
+    # No. of the data items in a program
+    P = P_1
+
+    # No. of quality requirements
+    K = K_1
+
+    # Channel constraint for one client
+    U = U_1
+
+    # Length of the index
+    In = In_1
+
+    # Channel broadcast rate
+    R = R_1
+
+def execute(*num):
+
+    Groups = generate_groups()
+
+    for x in num:
+        select_func(x, *Groups)
+
+
+##################################################################################
+#                                                                                #
+#                                MAIN FUNCTION                                   #
+#                                                                                #
+##################################################################################
+
+def main():
+
+    '''
+    0: No. of the channels in the system
+    1: No. of the data items in a program
+    2: No. of quality requirements
+    3: Channel constraint for one client
+    4: Length of the index
+    5: Channel broadcast rate
+    '''
+
+    set_param(20, 6, 4, 5, 1, 100)
+
+    '''
+    0: SDAA       1: ISDAA       2: SDAA-MDAA    3: ISDAA-MDAA  
+    4: SDAA-AEA   5: ISDAA-AEA   6: SDAA-COA     7: ISDAA-COA
+    '''
+
+    execute(*[x for x in range(0, 8, 1)])
     
-    print '\n-----------------------\nSDAA:'
-    temp = data_checker(SDAA(G,K), G)
-    if temp != 0:
-        print('SDAA wrong result:%d' %temp)
 
-    print '\nISDAA:'
-    temp = data_checker(ISDAA(G,K), G)
-    if temp != 0:
-        print('ISDAA wrong result:%d' %temp)
-
-    ######################## MDAA ############################
-
-    print '\n-----------------------\nSDAA  MDAA:'
-    temp = data_checker(SDAA(G1,U), G1)
-    if temp != 0:
-        print('SDAA MDAA wrong result:%d' %temp)
-
-    print '\nISDAA  MDAA:'
-    temp = data_checker(ISDAA(G1,U), G1)
-    if temp != 0:
-        print('ISDAA MDAA wrong result:%d' %temp)
-
-    ######################### AEA ###########################
-
-    print '\n-----------------------\nSDAA  AEA:'
-    temp = data_checker(SDAA(G2,U), G2)
-    if temp != 0:
-        print('SDAA AEA wrong result:%d' %temp)
-
-    print '\nISDAA  AEA:'
-    temp = data_checker(ISDAA(G2,U), G2)
-    if temp != 0:
-        print('ISDAA AEA wrong result:%d' %temp)
-
-    ######################### COA ###########################
+if __name__ == '__main__':
+    main()
     
-    print '\n-----------------------\nSDAA  COA:'
-    temp = data_checker(SDAA(G3,U), G3)
-    if temp != 0:
-        print('SDAA COA wrong result:%d' %temp)
-
-    print '\nISDAA  COA:'
-    temp = data_checker(ISDAA(G3,U), G3)
-    if temp != 0:
-        print('ISDAA COA wrong result:%d' %temp)
 
 
 
