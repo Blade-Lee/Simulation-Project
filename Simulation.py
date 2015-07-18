@@ -12,13 +12,13 @@ import math
 ##################################################################################
 
 # No. of the channels in the system
-N = 10
+N = 20
 
 # No. of the data items in a program
-P = 6
+P = 100
 
 # No. of quality requirements
-K = 3
+K = 4
 
 # Channel constraint for one client
 U = 5
@@ -379,8 +379,8 @@ def SDAA(G_11,X):
         s.append_dataGroup(G_1.get_member(i))
 
     # print '\nThe assigned channel groups are:'
-    CG.print_groups()
-    #CG.print_grouplen()
+    #CG.print_groups()
+    CG.print_grouplen()
 
     return CG
 
@@ -608,7 +608,7 @@ def ISDAA(DG_1, X):
                     Member.append_dataGroup(select)
 
     #CG.print_groups()
-    #CG.print_grouplen()
+    CG.print_grouplen()
 
     return CG
             
@@ -897,7 +897,7 @@ def COA(Dmember):
                                             u.set_pieces(l.get_pieces())                         
 
                                 t = DataGroupItem(l.get_group_index(), l.get_data_index(), d[j] - In,\
-                                                     l.get_data_second_index())
+                                                     l.get_data_second_index(), l.get_pieces())
                                 X[j].append(t)
 
                                 l.cut_len(d[j] - In)
@@ -911,7 +911,7 @@ def COA(Dmember):
 
                             else:
                                 t = DataGroupItem(l.get_group_index(), l.get_data_index(), l.item_len(),\
-                                                    l.get_data_second_index())
+                                                    l.get_data_second_index(), l.get_pieces())
                                 X[j].append(t)
 
                                 l.set_len(0)
@@ -1020,7 +1020,7 @@ if __name__ == '__main__':
         
 
     ###################### original ########################
-    '''
+    
     print '\n-----------------------\nSDAA:'
     temp = data_checker(SDAA(G,K), G)
     if temp != 0:
@@ -1056,7 +1056,7 @@ if __name__ == '__main__':
         print('ISDAA AEA wrong result:%d' %temp)
 
     ######################### COA ###########################
-    '''
+    
     print '\n-----------------------\nSDAA  COA:'
     temp = data_checker(SDAA(G3,U), G3)
     if temp != 0:
