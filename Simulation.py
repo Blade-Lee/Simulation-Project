@@ -337,8 +337,13 @@ class ChannelGroup(object):
             self.G_3[i-1].print_member()
 
     def print_grouplen(self):
+        max = 0
         for i in range(1, T+1):
-            print 'Group %d: len %d' %(i, self.G_3[i-1].member_len())
+            temp = self.G_3[i-1].member_len()
+            if temp > max:
+                max = temp
+            print 'Group %d: len %d' %(i, temp)
+        print 'Max: %d' %max
 
     def min_member(self):
         return min(self.G_3, key = lambda x:x.member_len())
@@ -374,8 +379,8 @@ def SDAA(G_11,X):
         s.append_dataGroup(G_1.get_member(i))
 
     # print '\nThe assigned channel groups are:'
-    # CG.print_groups()
-    CG.print_grouplen()
+    CG.print_groups()
+    #CG.print_grouplen()
 
     return CG
 
@@ -384,8 +389,8 @@ def SDAA(G_11,X):
 
 # The algorithm given by paper is not identical to the original algorithm!!!!!!!!!!!!!!
 def SIZE(G):
-    global N
-    return max([sum([x.max_len() for x in G.get_G1()])/float(N), max([x.max_len() for x in G.get_G1()])])
+    global T
+    return max([sum([x.max_len() for x in G.get_G1()])/float(T), max([x.max_len() for x in G.get_G1()])])
 
 def SCALE(G, d):
     temp = copy.deepcopy(G)
@@ -428,6 +433,8 @@ def DUAL(scaled_G_1):
             sG_1.add_member(x)
         else:
             sG_2.add_member(x)
+
+    #logging.info('Len_1:%d Len_2:%d'%(len(sG_1.get_G1()), len(sG_2.get_G1())))
 
     '''
     The dual algorithm has two parts: one is the assumed algorithm to pack all
@@ -538,18 +545,17 @@ def DUAL(scaled_G_1):
 
     #logging.info('Check: len(sG_1):%d len(sG_2):%d' %(len(sG_1.get_G1()),len(sG_2.get_G1())))
 
-    for remain in range(0, len(sG_2.get_G1())):
+    #logging.info('sG_2 Len:%d'%len(sG_2.get_G1()))
+
+    for remain in sG_2.get_G1():
         hasBin = False
         for bin in CG:
             if sum([x.max_len() for x in bin]) <= 1:
                 hasBin = True
-                temp = sG_2.get_G1()[remain]
-                bin.append(temp)
-                sG_2.del_member(temp)
+                bin.append(remain)
+                break
         if not hasBin:
-            temp = sG_2.get_G1()[remain]
-            CG.append([temp])
-            sG_2.del_member(temp)
+            CG.append([remain])
 
     return [len(CG), CG]
 
@@ -578,14 +584,33 @@ def ISDAA(DG_1, X):
 
     final = DUAL(SCALE(DG, upper))[1]
     
-    print '++++++++++++++++++++++++++++\n'
-    print 'dual:%d T:%d upper:%.10f lower:%.10f'%(dual, T, upper, lower)
-
+    #print '++++++++++++++++++++++++++++\n'
+    #print 'dual:%d T:%d upper:%.10f lower:%.10f'%(dual, T, upper, lower)
+    '''
     for x in range(0, len(final)):
         print 'Line %d:'%(x+1)
         for y in final[x]:
             print '\tMemberIndex:%d' %y.get_memberIndex()
         print'\tLen:%.10f' %sum([y.max_len() for y in final[x]])
+    '''
+    G_1 = copy.deepcopy(DG_1)
+
+    CG = ChannelGroup(M)
+
+    index = 0
+
+    for line in final:
+        Member = CG.get_G3()[index]
+        index += 1
+        for each in line:
+            for select in DG.get_G1():
+                if select.get_memberIndex() == each.get_memberIndex():
+                    Member.append_dataGroup(select)
+
+    #CG.print_groups()
+    #CG.print_grouplen()
+
+    return CG
             
 
 
@@ -978,45 +1003,73 @@ if __name__ == '__main__':
     G2 = DataGroup(True)
     G3 = DataGroup(True)
 
-    # Using MDAA to append member to G1
+    
     for i in range(0,P):
-        I = copy.deepcopy(MDAA(G.get_member(i)))
-        G1.add_member(I)
 
-    # Using AEA to append member to G2
-    for i in range(0,P):
-        I = copy.deepcopy(AEA(G.get_member(i)))
-        G2.add_member(I)
+        # Using MDAA to append member to G1
+        I_1 = copy.deepcopy(MDAA(G.get_member(i)))
+        G1.add_member(I_1)
 
+        # Using AEA to append member to G2
+        I_2 = copy.deepcopy(AEA(G.get_member(i)))
+        G2.add_member(I_2)
 
-    # Using COA to append member to G3
-    for i in range(0,P):
-        I = copy.deepcopy(COA(G.get_member(i)))
-        G3.add_member(I)
+        # Using COA to append member to G3
+        I_3 = copy.deepcopy(COA(G.get_member(i)))
+        G3.add_member(I_3)
+        
 
-    print '\n-----------------------\nISDAA assignment result:'
-
-    ISDAA(G, K)
-
-    #print('ISDAA len diff:%d' %data_checker(ISDAA(G, K), G))
-
+    ###################### original ########################
     '''
-    print '\n-----------------------\nSDAA assignment result:'
+    print '\n-----------------------\nSDAA:'
+    temp = data_checker(SDAA(G,K), G)
+    if temp != 0:
+        print('SDAA wrong result:%d' %temp)
 
-    print('SDAA len diff:%d' %data_checker(SDAA(G,K), G))
+    print '\nISDAA:'
+    temp = data_checker(ISDAA(G,K), G)
+    if temp != 0:
+        print('ISDAA wrong result:%d' %temp)
 
-    print '\n-----------------------\nMDAA assignment result:'
+    ######################## MDAA ############################
 
-    print('MDAA len diff:%d' %data_checker(SDAA(G1,U), G1))
+    print '\n-----------------------\nSDAA  MDAA:'
+    temp = data_checker(SDAA(G1,U), G1)
+    if temp != 0:
+        print('SDAA MDAA wrong result:%d' %temp)
 
-    print '\n-----------------------\nAEA assignment result:'
+    print '\nISDAA  MDAA:'
+    temp = data_checker(ISDAA(G1,U), G1)
+    if temp != 0:
+        print('ISDAA MDAA wrong result:%d' %temp)
 
-    print('AEA len diff:%d' %data_checker(SDAA(G2,U), G2))
+    ######################### AEA ###########################
 
-    print '\n-----------------------\nCOA assignment result:'
+    print '\n-----------------------\nSDAA  AEA:'
+    temp = data_checker(SDAA(G2,U), G2)
+    if temp != 0:
+        print('SDAA AEA wrong result:%d' %temp)
 
-    print('COA len diff:%d' %data_checker(SDAA(G3,U), G3))
+    print '\nISDAA  AEA:'
+    temp = data_checker(ISDAA(G2,U), G2)
+    if temp != 0:
+        print('ISDAA AEA wrong result:%d' %temp)
+
+    ######################### COA ###########################
     '''
+    print '\n-----------------------\nSDAA  COA:'
+    temp = data_checker(SDAA(G3,U), G3)
+    if temp != 0:
+        print('SDAA COA wrong result:%d' %temp)
+
+    print '\nISDAA  COA:'
+    temp = data_checker(ISDAA(G3,U), G3)
+    if temp != 0:
+        print('ISDAA COA wrong result:%d' %temp)
+
+
+
+    
 
         
 
