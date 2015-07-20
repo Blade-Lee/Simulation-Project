@@ -23,9 +23,6 @@ K = 0
 # Channel constraint for one client
 U = 0
 
-# Channel broadcast rate
-R = 0
-
 # No. of channel groups T = N/K or T = N/U
 T = 0
 
@@ -40,6 +37,31 @@ AFC = 0
 
 # Average channel wastage
 ACW = 0
+
+# Average size for multimedia files
+mu = 0
+
+# Variance among multimedia files
+sig = 0
+
+
+##################################################################################
+#                                                                                #
+#                               FILE GENERATION                                  #
+#                                                                                #
+##################################################################################
+
+
+
+def newFile_Gauss():
+    global mu, sig
+    temp = 0
+    while True:
+        temp = random.gauss(mu, sig)
+        if temp > 0:
+            return int(temp)
+
+
 
 ##################################################################################
 #                                                                                #
@@ -150,6 +172,9 @@ class DataGroupItem(object):
 class DataGroupMember(object):
 
     def __init__(self, Gindex, subStream = None):
+
+        global K
+
         self.subStream = []
         self.member_index = Gindex
 
@@ -157,9 +182,10 @@ class DataGroupMember(object):
         # Here using random generation-------------------------need modification
         # The range is (30,100), because of the requirement of 
         # 1/5 approximation algorithm in ISDAA
+        File = newFile_Gauss()
         for j in range(1,K+1):
             self.subStream.append(DataGroupItem(self.member_index, j, \
-                random.randint(30,100)))
+                File/K))
 
     def print_member(self):
         for i in self.subStream:
@@ -375,6 +401,10 @@ class ChannelGroup(object):
 
     def min_member(self):
         return min(self.G_3, key = lambda x:x.member_len())
+
+    def get_avglen(self):
+        global N
+        return sum([y.item_len() for x in self.G_3 for y in x.get_G2()])/N
 
     def get_G3(self):
         return self.G_3
@@ -1046,7 +1076,7 @@ func_list = ((SDAA, None, 'SDAA'), (ISDAA, None, 'ISDAA'), \
     G3 for COA
 '''
 
-def generate_groups(print_data):
+def generate_data_groups(print_data):
 
     # Original data group
     G = DataGroup(False)
@@ -1129,8 +1159,8 @@ def select_func(num, print_result, *G):
     if print_result == 3:
         print 'Max:', run.get_maxlen()
 
-    if num % 2 == 1:
-        print 'Final percentage of > 1/5: %.2f%%' %Greater_Percent
+    # if num % 2 == 1:
+        # print 'Final percentage of > 1/5: %.2f%%' %Greater_Percent
 
     return run
 
@@ -1142,97 +1172,22 @@ def select_func(num, print_result, *G):
     K_1:    No. of quality requirements
     U_1:    Channel constraint for one client
     In_1:   Channel broadcast rate
+    mu_1:   Average size for multimedia files
+    sig_1:  Variance among multimedia files
 '''
 
-def set_param(N_1, P_1, K_1, U_1, In_1, R_1):
+def set_param(N_1, P_1, K_1, U_1, In_1, mu_1, sig_1):
 
-    global N, P, K, U, In, R
+    global N, P, K, U, In, R, mu, sig
 
     N = N_1
     P = P_1
     K = K_1
     U = U_1
     In = In_1
-    R = R_1
+    mu = mu_1
+    sig = sig_1
 
-
-'''
-    Execute the list of functions '*num' once, using the same Group
-
-    To print the result:
-        0: print nothing
-        1: print the distribution whole channel group
-        2: print the length of the channel group
-        3: print the maximum lenght of the channel group
-'''
-
-def execute(print_result, *num):
-
-    Groups = generate_groups(False)
-
-    for x in num:
-        select_func(x, print_result, *Groups)
-
-
-'''
-    Run two functions 'num1' and 'num2' once, using the same data group 
-
-    Return the difference of the maximum channel length between 'num1' and 'num2'
-    (i.e. max_channel_len(num1) - max_channel_len(num2))
-'''
-
-def func_diff(print_result, num1, num2):
-
-    Groups = generate_groups(False)
-
-    ans1 = select_func(num1, print_result, *Groups)
-    ans2 = select_func(num2, print_result, *Groups)
-
-    return ans1.get_maxlen()-ans2.get_maxlen()
-
-
-'''
-    Run two functions 'cmp1' and 'cmp2' for 'iter' times
-
-    To print the result:
-        0: print nothing
-        1: print the distribution whole channel group
-        2: print the length of the channel group
-        3: print the maximum lenght of the channel group
-
-    Return the proportion that max_channel_len(cmp1) > max_channel_len(cmp2)
-
-'''
-
-def cmp_func(cmp1, cmp2, iter, print_result):
-    count = 0
-    hasPrint = -1
-    for x in range(0, iter):
-        temp = x * 100 / iter
-        if temp % 10 == 0 and temp != hasPrint:
-            hasPrint = temp
-            print 'Cmp proceed: %d%%' %temp
-        if func_diff(print_result, cmp1, cmp2) >= 0:
-            count += 1
-
-    return count/float(iter)
-
-
-'''
-    Run two functions 'cmp1' and 'cmp2' for 'iter' times
-
-    To print the result:
-        0: print nothing
-        1: print the distribution whole channel group
-        2: print the length of the channel group
-        3: print the maximum lenght of the channel group
-
-    Print the percent that max_channel_len(cmp1) > max_channel_len(cmp2)
-'''
-
-def print_cmp_func(cmp1, cmp2, iter, print_result):
-    print '\n%s >= %s: %.2f%%\n' %(func_list[cmp1][2], func_list[cmp2][2],\
-            cmp_func(cmp1, cmp2, iter, print_result)*100)
 
 
 ##################################################################################
@@ -1241,7 +1196,44 @@ def print_cmp_func(cmp1, cmp2, iter, print_result):
 #                                                                                #
 ##################################################################################
 
+'''
+    Run the 8 algorithms for 'iter' times each, using the same data group
 
+    'option': 1. average makespan  2. average channel length
+'''
+
+def average_criterion(option, iter):
+
+    ChannelLength = [0 for index in range(0, 8)]
+
+    proceed = 0
+
+    for times in range(0, iter):
+
+        proceed += 1
+
+        if proceed * 100 / iter % 5 == 0:
+            print 'Proceed: %d%%' %(proceed *100 / iter)
+
+        Groups = generate_data_groups(False)
+
+        for index in range(0, 8):
+            CG = select_func(index, 0, *Groups)
+            if option == 0:
+                ChannelLength[index] += CG.get_maxlen()
+            else:
+                ChannelLength[index] += CG.get_avglen()
+    for index in range(0, 8):
+        ChannelLength[index] /= iter
+
+    if option == 0:
+        print '\nAverage makespan for iteration %d:' %iter
+    else:
+        print '\nAverage channel length for iteration %d:' %iter
+    print '''SDAA:\t\t%d\nISDAA:\t\t%d
+        \nSDAA-MDAA:\t%d\nISDAA-MDAA:\t%d
+        \nSDAA-AEA:\t%d\nISDAA-AEA:\t%d
+        \nSDAA-COA:\t%d\nISDAA-COA:\t%d''' %(tuple(ChannelLength))
 
 ##################################################################################
 #                                                                                #
@@ -1257,28 +1249,15 @@ def main():
         P_1:    No. of the data items in a program
         K_1:    No. of quality requirements
         U_1:    Channel constraint for one client
-        In_1:   Channel broadcast rate
+        In_1:   Length of the index
+        mu_1:   Average size for multimedia files
+        sig_1:  Variance among multimedia files
     '''
 
-    set_param(20, 13, 4, 5, 1, 100)
+    set_param(20, 13, 4, 5, 1, 4*1024, 3)
 
-
-    '''
-        Execute the list of functions '*num' once, using the same Group
-
-        To print the result:
-            0: print nothing
-            1: print the distribution whole channel group
-            2: print the length of the channel group
-            3: print the maximum lenght of the channel group
-    '''
-
-    execute(2, 1)
-
-    '''
-    for x in range(1, 8, 2):
-        print_cmp_func(x, x-1, 10, 0)
-    '''
+    average_criterion(1, 20)
+    
 
 if __name__ == '__main__':
     main()
