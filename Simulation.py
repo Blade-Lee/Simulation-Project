@@ -32,6 +32,15 @@ T = 0
 # Length of the index
 In = 0
 
+# Percent of > 1/5 for a ISDAA run
+Greater_Percent = 0
+
+# Average number of files on each channel
+AFC = 0
+
+# Average channel wastage
+ACW = 0
+
 ##################################################################################
 #                                                                                #
 #                              CLASS DEFINITIONS                                 #
@@ -137,6 +146,7 @@ class DataGroupItem(object):
     def cut_len(self,x):
         self.data_length -= x
 
+
 class DataGroupMember(object):
 
     def __init__(self, Gindex, subStream = None):
@@ -149,7 +159,7 @@ class DataGroupMember(object):
         # 1/5 approximation algorithm in ISDAA
         for j in range(1,K+1):
             self.subStream.append(DataGroupItem(self.member_index, j, \
-                random.randint(30,1000)))
+                random.randint(30,100)))
 
     def print_member(self):
         for i in self.subStream:
@@ -178,6 +188,7 @@ class DataGroupMember(object):
 
     def clear(self):
         self.subStream[:] = []
+
 
 class DataGroup(object):
     
@@ -218,6 +229,7 @@ class DataGroup(object):
     def get_G1(self):
         return self.G_1
 
+
 #############################      CHANNEL GROUP     ################################
 
 class ChannelGroupItem(object):
@@ -233,25 +245,26 @@ class ChannelGroupItem(object):
 
     def print_item(self):
         hasHole = True
-        D = self.chan_contain[0].get_group_index()
-        print '\nC%d (%d):' %(self.chan_index, self.chan_length)
-        print '----------------------------------------'
-        for i in self.chan_contain:
-            if i.get_group_index() == -1:
-                i.print_item()
-                print '----------------------------------------'
-                hasHole = True
-            elif i.get_group_index() != D:
-                if not hasHole:
-                    print '----------------------------------------'
-                i.print_item()
-                hasHole = False
-                D = i.get_group_index()
-            else:
-                i.print_item()
-                hasHole = False
-        if not hasHole:
+        if len(self.chan_contain) != 0:
+            D = self.chan_contain[0].get_group_index()
+            print '\nC%d (%d):' %(self.chan_index, self.chan_length)
             print '----------------------------------------'
+            for i in self.chan_contain:
+                if i.get_group_index() == -1:
+                    i.print_item()
+                    print '----------------------------------------'
+                    hasHole = True
+                elif i.get_group_index() != D:
+                    if not hasHole:
+                        print '----------------------------------------'
+                    i.print_item()
+                    hasHole = False
+                    D = i.get_group_index()
+                else:
+                    i.print_item()
+                    hasHole = False
+            if not hasHole:
+                print '----------------------------------------'
 
     def item_len(self):
         return self.chan_length
@@ -259,6 +272,10 @@ class ChannelGroupItem(object):
     def data_len(self):
         return sum([x.item_len() for x in self.chan_contain if x.get_data_index() > 0 \
             and x.get_data_second_index() > -2 ])
+
+    def get_chan_contain(self):
+        return self.chan_contain
+
 
 class ChannelGroupMember(object):
 
@@ -274,6 +291,9 @@ class ChannelGroupMember(object):
     def print_member(self):
         for k in self.G_2:
             k.print_item()
+
+    def get_G2(self):
+        return self.G_2
 
     def member_len(self):
         return max(self.G_2, key = lambda x:x.item_len()).item_len()
@@ -315,7 +335,8 @@ class ChannelGroupMember(object):
         for i in self.G_2:
             if i.item_len() < m:
                 i.insert_data(DataGroupItem(-1,-1,m-i.item_len()))
-        
+    
+
 class ChannelGroup(object):
 
     def __init__(self, num, G_3 = None):
@@ -334,20 +355,23 @@ class ChannelGroup(object):
             self.G_3[i-1].print_member()
 
     def print_grouplen(self):
-        max = 0
-        for i in range(1, T+1):
-            temp = self.G_3[i-1].member_len()
-            if temp > max:
-                max = temp
-            print 'Group %d: len %d' %(i, temp)
+        DG_index_list = []
+        for x in self.G_3:
+            DG_index = set([])
+            for y in x.get_G2()[0].get_chan_contain():
+                if y.get_group_index() > 0 and not (y.get_group_index() in DG_index):
+                    DG_index.add(y.get_group_index())
+            DG_index_list.append(DG_index)
 
-    def print_maxlen(self):
         max = 0
         for i in range(1, T+1):
             temp = self.G_3[i-1].member_len()
             if temp > max:
                 max = temp
-        print 'Max: %d' %max
+            print 'Group %d: len %d' %(i, temp), DG_index_list[i-1]
+
+    def get_maxlen(self):
+        return max([x.member_len() for x in self.G_3])
 
     def min_member(self):
         return min(self.G_3, key = lambda x:x.member_len())
@@ -365,7 +389,7 @@ class ChannelGroup(object):
 
 # SDAA----------Simple Data Allocation Algorithm
 # G_11 is the data group, X is the number of items in each data group member
-def SDAA(G_11,X):
+def SDAA(G_11, X):
 
     global T, N, P
 
@@ -382,11 +406,6 @@ def SDAA(G_11,X):
         s = CG.min_member()
         s.append_dataGroup(G_1.get_member(i))
 
-    # print '\nThe assigned channel groups are:'
-    #CG.print_groups()
-    #CG.print_grouplen()
-    CG.print_maxlen()
-
     return CG
 
 
@@ -397,6 +416,7 @@ def SIZE(G):
     global T
     return max([sum([x.max_len() for x in G.get_G1()])/float(T), max([x.max_len() for x in G.get_G1()])])
 
+
 def SCALE(G, d):
     temp = copy.deepcopy(G)
     for x in temp.get_G1():
@@ -404,6 +424,7 @@ def SCALE(G, d):
             i.set_indexed_len(i.indexed_item_len()/float(d))
 
     return temp
+
 
 # Function for L[u_1, ..., u_k]
 def findInL(G, u):
@@ -417,10 +438,14 @@ def findInL(G, u):
             big = x
     return big
 
-# The dual approximation algorithm for Bin Packing
-# Returns [x, y]
-# x is the total number of bins
-# y is the actual schedual of bin-packing
+
+'''
+    The dual approximation algorithm for Bin Packing
+    Returns [x, y]
+    x is the total number of bins
+    y is the actual schedual of bin-packing
+'''
+
 def DUAL(scaled_G_1):
 
     sG = copy.deepcopy(scaled_G_1)
@@ -466,6 +491,7 @@ def DUAL(scaled_G_1):
                 CG.append([x])
             sG_1.del_member(x)
 
+
     # Stage 2
     for x in sG_1.get_G1():
         if x.max_len() >= 0.5 and x.max_len() < 0.6:
@@ -510,6 +536,7 @@ def DUAL(scaled_G_1):
         else:
             CG.append([x_1])
             sG_1.del_member(x_1)
+
 
     # Stage 5
     while len(sG_1.get_G1()) >= 1:
@@ -570,10 +597,11 @@ def DUAL(scaled_G_1):
 
     return [len(CG), CG, percent]
 
+
 # Improved SDAA using dual approximation algorithm
 def ISDAA(DG_1, X):
 
-    global T, N, P
+    global T, N, P, Greater_Percent
 
     T = N/X
     M = N/T
@@ -597,17 +625,8 @@ def ISDAA(DG_1, X):
 
     final = answer[1]
 
-    percent = answer[2]
+    Greater_Percent = answer[2]
     
-    #print '++++++++++++++++++++++++++++\n'
-    #print 'dual:%d T:%d upper:%.10f lower:%.10f'%(dual, T, upper, lower)
-    '''
-    for x in range(0, len(final)):
-        print 'Line %d:'%(x+1)
-        for y in final[x]:
-            print '\tMemberIndex:%d' %y.get_memberIndex()
-        print'\tLen:%.10f' %sum([y.max_len() for y in final[x]])
-    '''
     G_1 = copy.deepcopy(DG_1)
 
     CG = ChannelGroup(M)
@@ -616,20 +635,17 @@ def ISDAA(DG_1, X):
 
     for line in final:
         Member = CG.get_G3()[index]
+        temp = sum([x.max_len() for x in line])
+        if temp > 1.2:
+            print '----DUAL > 6/5: %.3f' % temp 
         index += 1
         for each in line:
             for select in DG.get_G1():
                 if select.get_memberIndex() == each.get_memberIndex():
                     Member.append_dataGroup(select)
 
-    #CG.print_groups()
-    #CG.print_grouplen()
-    CG.print_maxlen()
-    print 'DUAL Percent of > 1/5: %.2f%%' %percent
-
     return CG
             
-
 
 # MDAA----------Modified Data Allocation Algorithm
 def MDAA(Dmember):
@@ -658,7 +674,6 @@ def MDAA(Dmember):
         h += 1
 
     return G
-
 
 
 # AEA------------Average Estimation Algorithm
@@ -783,7 +798,6 @@ def AEA(Dmember):
             s.set_len(0)
 
     return Temp
-
 
 
 # COA------------Channel Overlapping Algorithm
@@ -968,6 +982,7 @@ def COA(Dmember):
 
     return Temp
 
+
 ##################################################################################
 #                                                                                #
 #                                DEBUGGING TOOLS                                 #
@@ -999,25 +1014,46 @@ def origin_len(G):
     return sum([x.item_len() for x in G.get_substream()])
 
 
-
 ##################################################################################
 #                                                                                #
 #                         ALGORITHM IMPLEMENTATION                               #
 #                                                                                #
 ##################################################################################
 
+'''
+    Using index to indicate the function you choose:
+    0: pure SDAA
+    1: pure ISDAA
+    2: SDAA-MDAA
+    3: ISDAA-MDAA
+    4: SDAA-AEA
+    5: ISDAA-AEA
+    6: SDAA-COA
+    7: ISDAA-COA
+'''
+
 func_list = ((SDAA, None, 'SDAA'), (ISDAA, None, 'ISDAA'), \
             (SDAA, MDAA, 'SDAA-MDAA'), (ISDAA, MDAA, 'ISDAA-MDAA'), \
             (SDAA, AEA, 'SDAA-AEA'), (ISDAA, AEA, 'ISDAA-AEA'), \
             (SDAA, COA, 'SDAA-COA'), (ISDAA, COA, 'ISDAA-COA'))
 
-def generate_groups():
+
+'''
+    Generate a tuple of Data Groups: (G, G1, G2, G3)
+    G for SDAA(ISDAA)
+    G1 for MDAA
+    G2 for AEA
+    G3 for COA
+'''
+
+def generate_groups(print_data):
 
     # Original data group
     G = DataGroup(False)
 
-    print '\n------------------\nOriginal data group:'
-    G.print_groups()
+    if print_data:
+        print '\n------------------\nOriginal data group:'
+        G.print_groups()
 
     # Empty data group
     G1 = DataGroup(True)
@@ -1040,13 +1076,26 @@ def generate_groups():
 
     return (G, G1, G2, G3)
 
-def select_func(num, *G):
+
+'''
+    Run the function 'num' in the 'func_list' once
+
+    To print the result:
+        0: print nothing
+        1: print the distribution whole channel group
+        2: print the length of the channel group
+        3: print the maximum lenght of the channel group
+
+    *G: (G, G1, G2, G3)
+
+    Return the distributed channel group
+'''
+
+def select_func(num, print_result, *G):
 
     global K, U
 
     select = func_list[num]
-
-    print '\n-----------------------\n%s:' %select[2]
 
     Group = 0
     limit = 0
@@ -1063,40 +1112,135 @@ def select_func(num, *G):
         else:
             Group = G[3]
 
+    if print_result != 0:
+        print '\n-----------------------\n%s:' %select[2]
+
     run = select[0](Group,limit)
 
     temp = data_checker(run, Group)
     if temp != 0:
         print('%s wrong result:%d' %(select[2], temp))
 
+
+    if print_result == 1:
+        run.print_groups()
+    if print_result == 2:
+        run.print_grouplen()
+    if print_result == 3:
+        print 'Max:', run.get_maxlen()
+
+    if num % 2 == 1:
+        print 'Final percentage of > 1/5: %.2f%%' %Greater_Percent
+
+    return run
+
+
+'''
+    Set the parameters
+    N_1:    No. of the channels in the system
+    P_1:    No. of the data items in a program
+    K_1:    No. of quality requirements
+    U_1:    Channel constraint for one client
+    In_1:   Channel broadcast rate
+'''
+
 def set_param(N_1, P_1, K_1, U_1, In_1, R_1):
 
     global N, P, K, U, In, R
 
-    # No. of the channels in the system
     N = N_1
-
-    # No. of the data items in a program
     P = P_1
-
-    # No. of quality requirements
     K = K_1
-
-    # Channel constraint for one client
     U = U_1
-
-    # Length of the index
     In = In_1
-
-    # Channel broadcast rate
     R = R_1
 
-def execute(*num):
 
-    Groups = generate_groups()
+'''
+    Execute the list of functions '*num' once, using the same Group
+
+    To print the result:
+        0: print nothing
+        1: print the distribution whole channel group
+        2: print the length of the channel group
+        3: print the maximum lenght of the channel group
+'''
+
+def execute(print_result, *num):
+
+    Groups = generate_groups(False)
 
     for x in num:
-        select_func(x, *Groups)
+        select_func(x, print_result, *Groups)
+
+
+'''
+    Run two functions 'num1' and 'num2' once, using the same data group 
+
+    Return the difference of the maximum channel length between 'num1' and 'num2'
+    (i.e. max_channel_len(num1) - max_channel_len(num2))
+'''
+
+def func_diff(print_result, num1, num2):
+
+    Groups = generate_groups(False)
+
+    ans1 = select_func(num1, print_result, *Groups)
+    ans2 = select_func(num2, print_result, *Groups)
+
+    return ans1.get_maxlen()-ans2.get_maxlen()
+
+
+'''
+    Run two functions 'cmp1' and 'cmp2' for 'iter' times
+
+    To print the result:
+        0: print nothing
+        1: print the distribution whole channel group
+        2: print the length of the channel group
+        3: print the maximum lenght of the channel group
+
+    Return the proportion that max_channel_len(cmp1) > max_channel_len(cmp2)
+
+'''
+
+def cmp_func(cmp1, cmp2, iter, print_result):
+    count = 0
+    hasPrint = -1
+    for x in range(0, iter):
+        temp = x * 100 / iter
+        if temp % 10 == 0 and temp != hasPrint:
+            hasPrint = temp
+            print 'Cmp proceed: %d%%' %temp
+        if func_diff(print_result, cmp1, cmp2) >= 0:
+            count += 1
+
+    return count/float(iter)
+
+
+'''
+    Run two functions 'cmp1' and 'cmp2' for 'iter' times
+
+    To print the result:
+        0: print nothing
+        1: print the distribution whole channel group
+        2: print the length of the channel group
+        3: print the maximum lenght of the channel group
+
+    Print the percent that max_channel_len(cmp1) > max_channel_len(cmp2)
+'''
+
+def print_cmp_func(cmp1, cmp2, iter, print_result):
+    print '\n%s >= %s: %.2f%%\n' %(func_list[cmp1][2], func_list[cmp2][2],\
+            cmp_func(cmp1, cmp2, iter, print_result)*100)
+
+
+##################################################################################
+#                                                                                #
+#                           PERFORMANCE EVALUATION                               #
+#                                                                                #
+##################################################################################
+
 
 
 ##################################################################################
@@ -1108,23 +1252,33 @@ def execute(*num):
 def main():
 
     '''
-    0: No. of the channels in the system
-    1: No. of the data items in a program
-    2: No. of quality requirements
-    3: Channel constraint for one client
-    4: Length of the index
-    5: Channel broadcast rate
+        Set the parameters
+        N_1:    No. of the channels in the system
+        P_1:    No. of the data items in a program
+        K_1:    No. of quality requirements
+        U_1:    Channel constraint for one client
+        In_1:   Channel broadcast rate
     '''
 
-    set_param(20, 6, 4, 5, 1, 100)
+    set_param(20, 13, 4, 5, 1, 100)
+
 
     '''
-    0: SDAA       1: ISDAA       2: SDAA-MDAA    3: ISDAA-MDAA  
-    4: SDAA-AEA   5: ISDAA-AEA   6: SDAA-COA     7: ISDAA-COA
+        Execute the list of functions '*num' once, using the same Group
+
+        To print the result:
+            0: print nothing
+            1: print the distribution whole channel group
+            2: print the length of the channel group
+            3: print the maximum lenght of the channel group
     '''
 
-    execute(*[x for x in range(0, 8, 1)])
-    
+    execute(2, 1)
+
+    '''
+    for x in range(1, 8, 2):
+        print_cmp_func(x, x-1, 10, 0)
+    '''
 
 if __name__ == '__main__':
     main()
