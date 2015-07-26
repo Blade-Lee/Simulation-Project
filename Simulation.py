@@ -185,7 +185,7 @@ class DataGroupMember(object):
         File = newFile_Gauss()
         for j in range(1,K+1):
             self.subStream.append(DataGroupItem(self.member_index, j, \
-                File/K))
+                random.randint(30, 1000)))
 
     def print_member(self):
         for i in self.subStream:
@@ -402,9 +402,12 @@ class ChannelGroup(object):
     def min_member(self):
         return min(self.G_3, key = lambda x:x.member_len())
 
-    def get_avglen(self):
-        global N
-        return sum([y.item_len() for x in self.G_3 for y in x.get_G2()])/N
+    def get_holelen(self):
+        return sum([z.item_len() for x in self.G_3 for y in x.get_G2() \
+                for z in y.get_chan_contain() if z.get_data_index() == -1])
+
+    def get_totallen(self):
+        return sum([y.item_len() for x in self.G_3 for y in x.get_G2()])
 
     def get_G3(self):
         return self.G_3
@@ -1199,10 +1202,16 @@ def set_param(N_1, P_1, K_1, U_1, In_1, mu_1, sig_1):
 '''
     Run the 8 algorithms for 'iter' times each, using the same data group
 
-    'option': 1. average makespan  2. average channel length
+    'option': 
+        0. average makespan  
+        1. average channel length
+        2. average unused channel length
+        3. percentage of average unused channel length
 '''
 
 def average_criterion(option, iter):
+
+    global N
 
     ChannelLength = [0 for index in range(0, 8)]
 
@@ -1221,19 +1230,34 @@ def average_criterion(option, iter):
             CG = select_func(index, 0, *Groups)
             if option == 0:
                 ChannelLength[index] += CG.get_maxlen()
-            else:
-                ChannelLength[index] += CG.get_avglen()
+            if option == 1:
+                ChannelLength[index] += CG.get_totallen()/N
+            if option == 2:
+                ChannelLength[index] += CG.get_holelen()
+            if option == 3:
+                ChannelLength[index] += CG.get_holelen() * 100/float(CG.get_totallen())
     for index in range(0, 8):
         ChannelLength[index] /= iter
 
     if option == 0:
         print '\nAverage makespan for iteration %d:' %iter
-    else:
+    elif option == 1:
         print '\nAverage channel length for iteration %d:' %iter
-    print '''SDAA:\t\t%d\nISDAA:\t\t%d
-        \nSDAA-MDAA:\t%d\nISDAA-MDAA:\t%d
-        \nSDAA-AEA:\t%d\nISDAA-AEA:\t%d
-        \nSDAA-COA:\t%d\nISDAA-COA:\t%d''' %(tuple(ChannelLength))
+    elif option == 2:
+        print '\nAverage unused channel length for iteration %d:' %iter
+
+    if option == 0 or option == 1 or option == 2:
+        print '''SDAA:\t\t%d\nISDAA:\t\t%d
+            \nSDAA-MDAA:\t%d\nISDAA-MDAA:\t%d
+            \nSDAA-AEA:\t%d\nISDAA-AEA:\t%d
+            \nSDAA-COA:\t%d\nISDAA-COA:\t%d''' %(tuple(ChannelLength))
+
+    if option == 3:
+        print '\nAverage percentage of unused channel length for iteration %d:' %iter
+        print '''SDAA:\t\t%.2f%%\nISDAA:\t\t%.2f%%
+            \nSDAA-MDAA:\t%.2f%%\nISDAA-MDAA:\t%.2f%%
+            \nSDAA-AEA:\t%.2f%%\nISDAA-AEA:\t%.2f%%
+            \nSDAA-COA:\t%.2f%%\nISDAA-COA:\t%.2f%%''' %(tuple(ChannelLength))
 
 ##################################################################################
 #                                                                                #
@@ -1254,9 +1278,9 @@ def main():
         sig_1:  Variance among multimedia files
     '''
 
-    set_param(20, 13, 4, 5, 1, 4*1024, 3)
+    set_param(10, 6, 3, 5, 1, 4*1024, 5)
 
-    average_criterion(1, 20)
+    average_criterion(3, 20)
     
 
 if __name__ == '__main__':
