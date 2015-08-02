@@ -1,2 +1,0 @@
-SDAA, MDAA, AEA 用data_checker检查后数据长度一致
-COA检查后数据长度不一致！！！！
