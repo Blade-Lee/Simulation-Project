@@ -14,7 +14,7 @@ import math
 # No. of the channels in the system
 N = 0
 
-# No. of the data items in a program
+# No. of the data group members in a program
 P = 0
 
 # No. of quality requirements
@@ -302,6 +302,39 @@ class ChannelGroupItem(object):
     def get_chan_contain(self):
         return self.chan_contain
 
+    def line_access_time(self, data_group_member, level, start_time):
+
+        contain = []
+        accu_time = 0
+        flag = False
+
+        result_time = 0
+
+        for item in self.chan_contain:
+            if item.get_group_index() == data_group_member and\
+                item.get_data_index() <= level:
+                flag = True
+                if len(contain) > 0:
+                    if contain[-1][2]:
+                        contain[-1][1] += item.item_len() - 1
+                        accu_time += item.item_len()
+                        continue
+            else:
+                flag = False
+                if len(contain) > 0:
+                    if not contain[-1][2]:
+                        contain[-1][1] += item.item_len() - 1
+                        accu_time += item.item_len()
+                        continue
+
+            contain.append([accu_time, accu_time + item.item_len() - 1, flag])
+            accu_time += item.item_len()
+
+        #在这里暂时不知道具体的广播运行机制
+        #比如：是不是需要全部循环一遍来确定是否找到目标数据？
+        #建议：读paper里关于index的部分
+
+
 
 class ChannelGroupMember(object):
 
@@ -361,6 +394,26 @@ class ChannelGroupMember(object):
         for i in self.G_2:
             if i.item_len() < m:
                 i.insert_data(DataGroupItem(-1,-1,m-i.item_len()))
+
+    def has_data_group_member(data_group_member):
+        for line in self.G_2:
+            for item in line.get_chan_contain():
+                if item.get_group_index() == data_group_member:
+                    return True
+        return False
+
+    def access_time(data_group_member, level, start_time):
+
+        members = len(self.G_2)
+
+        temp_time = [0 for x in range(0, members)]
+
+        for line in range(0, members):
+            temp_time[line] = self.G_2[line].line_access_time(data_group_member, \
+                                                            level, start_time)
+
+        return max(temp_time)
+
     
 
 class ChannelGroup(object):
@@ -411,6 +464,16 @@ class ChannelGroup(object):
 
     def get_G3(self):
         return self.G_3
+
+    def target_channel_length(data_group_member):
+        for member in self.G_3:
+            if member.has_data_group_member(data_group_member):
+                return member.member_len()
+
+    def access_target(data_group_member, level, start_time):
+        for member in self.G_3:
+            if member.has_data_group_member(data_group_member):
+                return member.access_time(data_group_member, level, start_time)
 
 
 ##################################################################################
@@ -1124,7 +1187,7 @@ def generate_data_groups(print_data):
     Return the distributed channel group
 '''
 
-def select_func(num, print_result, *G):
+def select_func(num, print_result, G):
 
     global K, U
 
@@ -1171,7 +1234,7 @@ def select_func(num, print_result, *G):
 '''
     Set the parameters
     N_1:    No. of the channels in the system
-    P_1:    No. of the data items in a program
+    P_1:    No. of the data group members in a program
     K_1:    No. of quality requirements
     U_1:    Channel constraint for one client
     In_1:   Channel broadcast rate
@@ -1227,7 +1290,7 @@ def average_criterion(option, iter):
         Groups = generate_data_groups(False)
 
         for index in range(0, 8):
-            CG = select_func(index, 0, *Groups)
+            CG = select_func(index, 0, Groups)
             if option == 0:
                 ChannelLength[index] += CG.get_maxlen()
             if option == 1:
@@ -1259,6 +1322,48 @@ def average_criterion(option, iter):
             \nSDAA-AEA:\t%.2f%%\nISDAA-AEA:\t%.2f%%
             \nSDAA-COA:\t%.2f%%\nISDAA-COA:\t%.2f%%''' %(tuple(ChannelLength))
 
+
+def sim_access_time(channel_group, data_group_member, level, iter):
+
+    access_time = 0
+
+    for time in range(0, iter):
+        start = random.randint(0, channel_group.target_channel_length(data_group_member))
+
+        access_time += channel_group.access_target(data_group_member, level, start)
+
+
+    
+
+'''
+    Simulate a user to access the broadcasting system for 'iter' times
+
+    Each time the user will ask for a certain piece of data, which means he must
+download the whole data group member of that data
+
+    Calculate the avreage access time of the user in 'iter' times when using a 
+certain algorithm
+'''
+
+def access_time_criterion(iter):
+    
+    global N, P, K, U
+
+    access_time = [[0 for index in range(0, 8)] for index in range(0, K)]
+
+    proceed = 0
+
+    for times in range(0, iter):
+
+        proceed += 1
+
+        if proceed * 100 / iter % 5 == 0:
+            print 'Proceed: %d%%' %(proceed * 100 / iter)
+
+        groups = generate_data_groups(False)
+
+        
+
 ##################################################################################
 #                                                                                #
 #                                MAIN FUNCTION                                   #
@@ -1270,7 +1375,7 @@ def main():
     '''
         Set the parameters
         N_1:    No. of the channels in the system
-        P_1:    No. of the data items in a program
+        P_1:    No. of the data group members in a program
         K_1:    No. of quality requirements
         U_1:    Channel constraint for one client
         In_1:   Length of the index

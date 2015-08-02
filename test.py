@@ -1,11 +1,3 @@
-
-
-x = [x for x in range(0,10)]
-
-k = []
-
-k.append(x[1])
-del x[1]
-
-print k
-print x
+t = [1,2,3,4,5,6]
+for x in t:
+    print x
