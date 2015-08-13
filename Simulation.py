@@ -302,13 +302,18 @@ class ChannelGroupItem(object):
     def get_chan_contain(self):
         return self.chan_contain
 
+    def has_data(self, data_group_member, level):
+        for item in self.chan_contain:
+                if item.get_group_index() == data_group_member and\
+                    item.get_data_index() <= level:
+                    return True
+        return False
+
     def line_access_time(self, data_group_member, level, start_time):
 
         contain = []
         accu_time = 0
         flag = False
-
-        result_time = 0
 
         for item in self.chan_contain:
             if item.get_group_index() == data_group_member and\
@@ -330,9 +335,19 @@ class ChannelGroupItem(object):
             contain.append([accu_time, accu_time + item.item_len() - 1, flag])
             accu_time += item.item_len()
 
-        #在这里暂时不知道具体的广播运行机制
-        #比如：是不是需要全部循环一遍来确定是否找到目标数据？
-        #建议：读paper里关于index的部分
+        #index has no help on broadcasting simulation
+
+        time_min = self.chan_length
+        for item in contain:
+            if item[0] < start_time and item[1] >= start_time:
+                if item[2]:
+                    time_min += item[1] - start_time + 1
+                else:
+                    time_min -= start_time - item[0] + 1
+                break
+
+        return time_min 
+
 
 
 
@@ -395,21 +410,21 @@ class ChannelGroupMember(object):
             if i.item_len() < m:
                 i.insert_data(DataGroupItem(-1,-1,m-i.item_len()))
 
-    def has_data_group_member(data_group_member):
+    def has_data_group_member(self, data_group_member, level):
         for line in self.G_2:
-            for item in line.get_chan_contain():
-                if item.get_group_index() == data_group_member:
-                    return True
+            if line.has_data(data_group_member, level):
+                return True
         return False
 
-    def access_time(data_group_member, level, start_time):
+    def access_time(self, data_group_member, level, start_time):
 
         members = len(self.G_2)
 
         temp_time = [0 for x in range(0, members)]
 
         for line in range(0, members):
-            temp_time[line] = self.G_2[line].line_access_time(data_group_member, \
+            if self.G_2[line].has_data(data_group_member, level):
+                temp_time[line] = self.G_2[line].line_access_time(data_group_member, \
                                                             level, start_time)
 
         return max(temp_time)
@@ -465,14 +480,14 @@ class ChannelGroup(object):
     def get_G3(self):
         return self.G_3
 
-    def target_channel_length(data_group_member):
+    def target_channel_length(self, data_group_member, level):
         for member in self.G_3:
-            if member.has_data_group_member(data_group_member):
+            if member.has_data_group_member(data_group_member, level):
                 return member.member_len()
 
-    def access_target(data_group_member, level, start_time):
+    def access_target(self, data_group_member, level, start_time):
         for member in self.G_3:
-            if member.has_data_group_member(data_group_member):
+            if member.has_data_group_member(data_group_member, level):
                 return member.access_time(data_group_member, level, start_time)
 
 
@@ -1323,35 +1338,43 @@ def average_criterion(option, iter):
             \nSDAA-COA:\t%.2f%%\nISDAA-COA:\t%.2f%%''' %(tuple(ChannelLength))
 
 
-def sim_access_time(channel_group, data_group_member, level, iter):
+def avg_access_time(channel_group, data_group_member, level, users):
 
     access_time = 0
 
-    for time in range(0, iter):
-        start = random.randint(0, channel_group.target_channel_length(data_group_member))
+    for time in range(0, users):
+        start = random.randint(0, \
+            channel_group.target_channel_length(data_group_member, level) - 1)
 
         access_time += channel_group.access_target(data_group_member, level, start)
+
+    access_time = access_time / float(users)
+    return access_time
 
 
     
 
 '''
-    Simulate a user to access the broadcasting system for 'iter' times
+    Simulate 'users' users to access the broadcasting system, for 'iter' times
 
-    Each time the user will ask for a certain piece of data, which means he must
-download the whole data group member of that data
+    Each user will ask for a certain piece of data, which means he must download 
+the whole data group member of that data
 
-    Calculate the avreage access time of the user in 'iter' times when using a 
+    In each 'iter', a data group will be generated and then accessed by 'users'
+
+    Calculate the avreage access time of the 'users' when using a 
 certain algorithm
 '''
 
-def access_time_criterion(iter):
+def access_time_criterion(iter, users):
     
     global N, P, K, U
 
     access_time = [[0 for index in range(0, 8)] for index in range(0, K)]
 
     proceed = 0
+
+    total_avg = [0 for x in range(0, 8)]
 
     for times in range(0, iter):
 
@@ -1362,7 +1385,25 @@ def access_time_criterion(iter):
 
         groups = generate_data_groups(False)
 
-        
+        target_member = random.randint(1, P)
+
+        target_level = random.randint(1, K)
+
+        for index in range(0, 8):
+            channel_group = select_func(index, 0, groups)
+            total_avg[index] += avg_access_time(channel_group, \
+                target_member, target_level, users)
+
+    total_avg = [x/float(iter) for x in total_avg]
+            
+
+    print '''\nAverage access time on data %d and level %d for %d times, %d users:''' \
+        %(target_member, target_level, iter, users)
+    print '''SDAA:%.2f\nISDAA:%.2f
+    \nSDAA-MDAA:%.2f\nISDAA-MDAA:%.2f
+    \nSDAA-AEA:%.2f\nISDAA-AEA:%.2f
+    \nSDAA-COA:%.2f\nISDAA-COA:%.2f''' %(tuple(total_avg))
+
 
 ##################################################################################
 #                                                                                #
@@ -1385,15 +1426,12 @@ def main():
 
     set_param(10, 6, 3, 5, 1, 4*1024, 5)
 
-    average_criterion(3, 20)
-    
+    #average_criterion(3, 20)
+
+    access_time_criterion(50, 1000)
 
 if __name__ == '__main__':
     main()
-    
-
-
-
     
 
         
