@@ -1,0 +1,279 @@
+2015-08-23 16:22:09 [scrapy] INFO: Scrapy 1.0.3 started (bot: doubanmovie)
+2015-08-23 16:22:09 [scrapy] INFO: Optional features available: ssl, http11
+2015-08-23 16:22:09 [scrapy] INFO: Overridden settings: {'NEWSPIDER_MODULE': 'doubanmovie.spiders', 'FEED_URI': 'test.json', 'SPIDER_MODULES': ['doubanmovie.spiders'], 'BOT_NAME': 'doubanmovie', 'FEED_FORMAT': 'json', 'LOG_FILE': 'movie.log'}
+2015-08-23 16:22:10 [scrapy] INFO: Enabled extensions: CloseSpider, FeedExporter, TelnetConsole, LogStats, CoreStats, SpiderState
+2015-08-23 16:22:10 [py.warnings] WARNING: E:\ExperimentApp\python\lib\site-packages\scrapy-1.0.3-py2.7.egg\scrapy\utils\deprecate.py:155: ScrapyDeprecationWarning: `scrapy.contrib.downloadermiddleware.useragent.UserAgentMiddleware` class is deprecated, use `scrapy.downloadermiddlewares.useragent.UserAgentMiddleware` instead
+  ScrapyDeprecationWarning)
+
+2015-08-23 16:22:10 [scrapy] INFO: Enabled downloader middlewares: HttpAuthMiddleware, DownloadTimeoutMiddleware, RotateUserAgentMiddleware, RetryMiddleware, DefaultHeadersMiddleware, MetaRefreshMiddleware, HttpCompressionMiddleware, RedirectMiddleware, CookiesMiddleware, ChunkedTransferMiddleware, DownloaderStats
+2015-08-23 16:22:10 [scrapy] INFO: Enabled spider middlewares: HttpErrorMiddleware, OffsiteMiddleware, RefererMiddleware, UrlLengthMiddleware, DepthMiddleware
+2015-08-23 16:22:10 [scrapy] INFO: Enabled item pipelines: 
+2015-08-23 16:22:10 [scrapy] INFO: Spider opened
+2015-08-23 16:22:10 [scrapy] INFO: Crawled 0 pages (at 0 pages/min), scraped 0 items (at 0 items/min)
+2015-08-23 16:22:10 [scrapy] DEBUG: Telnet console listening on 127.0.0.1:6023
+2015-08-23 16:22:10 [py.warnings] WARNING: D:\My Workspace\PRP\Gao\crawlers\doubanmovie\doubanmovie\spiders\rotate_useragent.py:25: ScrapyDeprecationWarning: log.msg has been deprecated, create a python logger and log through it instead
+  log.msg('Current UserAgent: '+ua, level='INFO')
+
+2015-08-23 16:22:10 [scrapy] ERROR: Error downloading <GET http://movie.douban.com/top250>
+Traceback (most recent call last):
+  File "E:\ExperimentApp\python\lib\site-packages\scrapy-1.0.3-py2.7.egg\scrapy\utils\defer.py", line 45, in mustbe_deferred
+    result = f(*args, **kw)
+  File "E:\ExperimentApp\python\lib\site-packages\scrapy-1.0.3-py2.7.egg\scrapy\core\downloader\middleware.py", line 32, in process_request
+    response = method(request=request, spider=spider)
+  File "D:\My Workspace\PRP\Gao\crawlers\doubanmovie\doubanmovie\spiders\rotate_useragent.py", line 25, in process_request
+    log.msg('Current UserAgent: '+ua, level='INFO')
+  File "E:\ExperimentApp\python\lib\site-packages\scrapy-1.0.3-py2.7.egg\scrapy\log.py", line 49, in msg
+    logger.log(level, message, *[kw] if kw else [])
+  File "E:\ExperimentApp\python\lib\logging\__init__.py", line 1187, in log
+    raise TypeError("level must be an integer")
+TypeError: level must be an integer
+2015-08-23 16:22:10 [scrapy] INFO: Closing spider (finished)
+2015-08-23 16:22:10 [scrapy] INFO: Dumping Scrapy stats:
+{'downloader/exception_count': 1,
+ 'downloader/exception_type_count/exceptions.TypeError': 1,
+ 'finish_reason': 'finished',
+ 'finish_time': datetime.datetime(2015, 8, 23, 8, 22, 10, 562000),
+ 'log_count/DEBUG': 1,
+ 'log_count/ERROR': 1,
+ 'log_count/INFO': 7,
+ 'log_count/WARNING': 2,
+ 'scheduler/dequeued': 1,
+ 'scheduler/dequeued/memory': 1,
+ 'scheduler/enqueued': 1,
+ 'scheduler/enqueued/memory': 1,
+ 'start_time': datetime.datetime(2015, 8, 23, 8, 22, 10, 254000)}
+2015-08-23 16:22:10 [scrapy] INFO: Spider closed (finished)
+2015-08-23 16:26:11 [scrapy] INFO: Scrapy 1.0.3 started (bot: doubanmovie)
+2015-08-23 16:26:11 [scrapy] INFO: Optional features available: ssl, http11
+2015-08-23 16:26:11 [scrapy] INFO: Overridden settings: {'NEWSPIDER_MODULE': 'doubanmovie.spiders', 'FEED_URI': 'test.json', 'SPIDER_MODULES': ['doubanmovie.spiders'], 'BOT_NAME': 'doubanmovie', 'FEED_FORMAT': 'json', 'LOG_FILE': 'movie.log'}
+2015-08-23 16:26:12 [scrapy] INFO: Enabled extensions: CloseSpider, FeedExporter, TelnetConsole, LogStats, CoreStats, SpiderState
+2015-08-23 16:26:12 [py.warnings] WARNING: E:\ExperimentApp\python\lib\site-packages\scrapy-1.0.3-py2.7.egg\scrapy\utils\deprecate.py:155: ScrapyDeprecationWarning: `scrapy.contrib.downloadermiddleware.useragent.UserAgentMiddleware` class is deprecated, use `scrapy.downloadermiddlewares.useragent.UserAgentMiddleware` instead
+  ScrapyDeprecationWarning)
+
+2015-08-23 16:26:12 [scrapy] INFO: Enabled downloader middlewares: HttpAuthMiddleware, DownloadTimeoutMiddleware, RotateUserAgentMiddleware, RetryMiddleware, DefaultHeadersMiddleware, MetaRefreshMiddleware, HttpCompressionMiddleware, RedirectMiddleware, CookiesMiddleware, ChunkedTransferMiddleware, DownloaderStats
+2015-08-23 16:26:12 [scrapy] INFO: Enabled spider middlewares: HttpErrorMiddleware, OffsiteMiddleware, RefererMiddleware, UrlLengthMiddleware, DepthMiddleware
+2015-08-23 16:26:12 [scrapy] INFO: Enabled item pipelines: 
+2015-08-23 16:26:12 [scrapy] INFO: Spider opened
+2015-08-23 16:26:12 [scrapy] INFO: Crawled 0 pages (at 0 pages/min), scraped 0 items (at 0 items/min)
+2015-08-23 16:26:12 [scrapy] DEBUG: Telnet console listening on 127.0.0.1:6023
+2015-08-23 16:26:12 [py.warnings] WARNING: D:\My Workspace\PRP\Gao\crawlers\doubanmovie\doubanmovie\spiders\rotate_useragent.py:25: ScrapyDeprecationWarning: log.msg has been deprecated, create a python logger and log through it instead
+  log.msg('Current UserAgent: '+ua, log.INFO)
+
+2015-08-23 16:26:12 [scrapy] INFO: Current UserAgent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/535.24 (KHTML, like Gecko) Chrome/19.0.1055.1 Safari/535.24
+2015-08-23 16:26:12 [scrapy] DEBUG: Crawled (403) <GET http://movie.douban.com/top250> (referer: None)
+2015-08-23 16:26:13 [scrapy] DEBUG: Ignoring response <403 http://movie.douban.com/top250>: HTTP status code is not handled or not allowed
+2015-08-23 16:26:13 [scrapy] INFO: Closing spider (finished)
+2015-08-23 16:26:13 [scrapy] INFO: Dumping Scrapy stats:
+{'downloader/request_bytes': 290,
+ 'downloader/request_count': 1,
+ 'downloader/request_method_count/GET': 1,
+ 'downloader/response_bytes': 305,
+ 'downloader/response_count': 1,
+ 'downloader/response_status_count/403': 1,
+ 'finish_reason': 'finished',
+ 'finish_time': datetime.datetime(2015, 8, 23, 8, 26, 13, 86000),
+ 'log_count/DEBUG': 3,
+ 'log_count/INFO': 8,
+ 'log_count/WARNING': 2,
+ 'response_received_count': 1,
+ 'scheduler/dequeued': 1,
+ 'scheduler/dequeued/memory': 1,
+ 'scheduler/enqueued': 1,
+ 'scheduler/enqueued/memory': 1,
+ 'start_time': datetime.datetime(2015, 8, 23, 8, 26, 12, 892000)}
+2015-08-23 16:26:13 [scrapy] INFO: Spider closed (finished)
+2015-08-23 16:26:32 [scrapy] INFO: Scrapy 1.0.3 started (bot: doubanmovie)
+2015-08-23 16:26:32 [scrapy] INFO: Optional features available: ssl, http11
+2015-08-23 16:26:32 [scrapy] INFO: Overridden settings: {'NEWSPIDER_MODULE': 'doubanmovie.spiders', 'FEED_URI': 'test.json', 'SPIDER_MODULES': ['doubanmovie.spiders'], 'BOT_NAME': 'doubanmovie', 'FEED_FORMAT': 'json', 'LOG_FILE': 'movie.log'}
+2015-08-23 16:26:33 [scrapy] INFO: Enabled extensions: CloseSpider, FeedExporter, TelnetConsole, LogStats, CoreStats, SpiderState
+2015-08-23 16:26:33 [py.warnings] WARNING: E:\ExperimentApp\python\lib\site-packages\scrapy-1.0.3-py2.7.egg\scrapy\utils\deprecate.py:155: ScrapyDeprecationWarning: `scrapy.contrib.downloadermiddleware.useragent.UserAgentMiddleware` class is deprecated, use `scrapy.downloadermiddlewares.useragent.UserAgentMiddleware` instead
+  ScrapyDeprecationWarning)
+
+2015-08-23 16:26:33 [scrapy] INFO: Enabled downloader middlewares: HttpAuthMiddleware, DownloadTimeoutMiddleware, RotateUserAgentMiddleware, RetryMiddleware, DefaultHeadersMiddleware, MetaRefreshMiddleware, HttpCompressionMiddleware, RedirectMiddleware, CookiesMiddleware, ChunkedTransferMiddleware, DownloaderStats
+2015-08-23 16:26:33 [scrapy] INFO: Enabled spider middlewares: HttpErrorMiddleware, OffsiteMiddleware, RefererMiddleware, UrlLengthMiddleware, DepthMiddleware
+2015-08-23 16:26:33 [scrapy] INFO: Enabled item pipelines: 
+2015-08-23 16:26:33 [scrapy] INFO: Spider opened
+2015-08-23 16:26:33 [scrapy] INFO: Crawled 0 pages (at 0 pages/min), scraped 0 items (at 0 items/min)
+2015-08-23 16:26:33 [scrapy] DEBUG: Telnet console listening on 127.0.0.1:6023
+2015-08-23 16:26:33 [py.warnings] WARNING: D:\My Workspace\PRP\Gao\crawlers\doubanmovie\doubanmovie\spiders\rotate_useragent.py:25: ScrapyDeprecationWarning: log.msg has been deprecated, create a python logger and log through it instead
+  log.msg('Current UserAgent: '+ua, log.INFO)
+
+2015-08-23 16:26:33 [scrapy] INFO: Current UserAgent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/535.24 (KHTML, like Gecko) Chrome/19.0.1055.1 Safari/535.24
+2015-08-23 16:26:33 [scrapy] DEBUG: Crawled (403) <GET http://movie.douban.com/top250> (referer: None)
+2015-08-23 16:26:33 [scrapy] DEBUG: Ignoring response <403 http://movie.douban.com/top250>: HTTP status code is not handled or not allowed
+2015-08-23 16:26:33 [scrapy] INFO: Closing spider (finished)
+2015-08-23 16:26:33 [scrapy] INFO: Dumping Scrapy stats:
+{'downloader/request_bytes': 290,
+ 'downloader/request_count': 1,
+ 'downloader/request_method_count/GET': 1,
+ 'downloader/response_bytes': 305,
+ 'downloader/response_count': 1,
+ 'downloader/response_status_count/403': 1,
+ 'finish_reason': 'finished',
+ 'finish_time': datetime.datetime(2015, 8, 23, 8, 26, 33, 442000),
+ 'log_count/DEBUG': 3,
+ 'log_count/INFO': 8,
+ 'log_count/WARNING': 2,
+ 'response_received_count': 1,
+ 'scheduler/dequeued': 1,
+ 'scheduler/dequeued/memory': 1,
+ 'scheduler/enqueued': 1,
+ 'scheduler/enqueued/memory': 1,
+ 'start_time': datetime.datetime(2015, 8, 23, 8, 26, 33, 250000)}
+2015-08-23 16:26:33 [scrapy] INFO: Spider closed (finished)
+2015-08-23 16:26:44 [scrapy] INFO: Scrapy 1.0.3 started (bot: doubanmovie)
+2015-08-23 16:26:44 [scrapy] INFO: Optional features available: ssl, http11
+2015-08-23 16:26:44 [scrapy] INFO: Overridden settings: {'NEWSPIDER_MODULE': 'doubanmovie.spiders', 'FEED_URI': 'test.json', 'SPIDER_MODULES': ['doubanmovie.spiders'], 'BOT_NAME': 'doubanmovie', 'FEED_FORMAT': 'json', 'LOG_FILE': 'movie.log'}
+2015-08-23 16:26:45 [scrapy] INFO: Enabled extensions: CloseSpider, FeedExporter, TelnetConsole, LogStats, CoreStats, SpiderState
+2015-08-23 16:26:45 [py.warnings] WARNING: E:\ExperimentApp\python\lib\site-packages\scrapy-1.0.3-py2.7.egg\scrapy\utils\deprecate.py:155: ScrapyDeprecationWarning: `scrapy.contrib.downloadermiddleware.useragent.UserAgentMiddleware` class is deprecated, use `scrapy.downloadermiddlewares.useragent.UserAgentMiddleware` instead
+  ScrapyDeprecationWarning)
+
+2015-08-23 16:26:45 [scrapy] INFO: Enabled downloader middlewares: HttpAuthMiddleware, DownloadTimeoutMiddleware, RotateUserAgentMiddleware, RetryMiddleware, DefaultHeadersMiddleware, MetaRefreshMiddleware, HttpCompressionMiddleware, RedirectMiddleware, CookiesMiddleware, ChunkedTransferMiddleware, DownloaderStats
+2015-08-23 16:26:45 [scrapy] INFO: Enabled spider middlewares: HttpErrorMiddleware, OffsiteMiddleware, RefererMiddleware, UrlLengthMiddleware, DepthMiddleware
+2015-08-23 16:26:45 [scrapy] INFO: Enabled item pipelines: 
+2015-08-23 16:26:45 [scrapy] INFO: Spider opened
+2015-08-23 16:26:45 [scrapy] INFO: Crawled 0 pages (at 0 pages/min), scraped 0 items (at 0 items/min)
+2015-08-23 16:26:45 [scrapy] DEBUG: Telnet console listening on 127.0.0.1:6023
+2015-08-23 16:26:45 [py.warnings] WARNING: D:\My Workspace\PRP\Gao\crawlers\doubanmovie\doubanmovie\spiders\rotate_useragent.py:25: ScrapyDeprecationWarning: log.msg has been deprecated, create a python logger and log through it instead
+  log.msg('Current UserAgent: '+ua, log.INFO)
+
+2015-08-23 16:26:45 [scrapy] INFO: Current UserAgent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_0) AppleWebKit/536.3 (KHTML, like Gecko) Chrome/19.0.1063.0 Safari/536.3
+2015-08-23 16:26:45 [scrapy] DEBUG: Crawled (403) <GET http://movie.douban.com/top250> (referer: None)
+2015-08-23 16:26:45 [scrapy] DEBUG: Ignoring response <403 http://movie.douban.com/top250>: HTTP status code is not handled or not allowed
+2015-08-23 16:26:45 [scrapy] INFO: Closing spider (finished)
+2015-08-23 16:26:45 [scrapy] INFO: Dumping Scrapy stats:
+{'downloader/request_bytes': 303,
+ 'downloader/request_count': 1,
+ 'downloader/request_method_count/GET': 1,
+ 'downloader/response_bytes': 305,
+ 'downloader/response_count': 1,
+ 'downloader/response_status_count/403': 1,
+ 'finish_reason': 'finished',
+ 'finish_time': datetime.datetime(2015, 8, 23, 8, 26, 45, 436000),
+ 'log_count/DEBUG': 3,
+ 'log_count/INFO': 8,
+ 'log_count/WARNING': 2,
+ 'response_received_count': 1,
+ 'scheduler/dequeued': 1,
+ 'scheduler/dequeued/memory': 1,
+ 'scheduler/enqueued': 1,
+ 'scheduler/enqueued/memory': 1,
+ 'start_time': datetime.datetime(2015, 8, 23, 8, 26, 45, 244000)}
+2015-08-23 16:26:45 [scrapy] INFO: Spider closed (finished)
+2015-08-23 16:29:15 [scrapy] INFO: Scrapy 1.0.3 started (bot: doubanmovie)
+2015-08-23 16:29:15 [scrapy] INFO: Optional features available: ssl, http11
+2015-08-23 16:29:15 [scrapy] INFO: Overridden settings: {'NEWSPIDER_MODULE': 'doubanmovie.spiders', 'FEED_URI': 'test.json', 'SPIDER_MODULES': ['doubanmovie.spiders'], 'BOT_NAME': 'doubanmovie', 'FEED_FORMAT': 'json', 'LOG_FILE': 'movie.log'}
+2015-08-23 16:29:16 [scrapy] INFO: Enabled extensions: CloseSpider, FeedExporter, TelnetConsole, LogStats, CoreStats, SpiderState
+2015-08-23 16:29:16 [py.warnings] WARNING: E:\ExperimentApp\python\lib\site-packages\scrapy-1.0.3-py2.7.egg\scrapy\utils\deprecate.py:155: ScrapyDeprecationWarning: `scrapy.contrib.downloadermiddleware.useragent.UserAgentMiddleware` class is deprecated, use `scrapy.downloadermiddlewares.useragent.UserAgentMiddleware` instead
+  ScrapyDeprecationWarning)
+
+2015-08-23 16:29:16 [scrapy] INFO: Enabled downloader middlewares: HttpAuthMiddleware, DownloadTimeoutMiddleware, RotateUserAgentMiddleware, RetryMiddleware, DefaultHeadersMiddleware, MetaRefreshMiddleware, HttpCompressionMiddleware, RedirectMiddleware, CookiesMiddleware, ChunkedTransferMiddleware, DownloaderStats
+2015-08-23 16:29:16 [scrapy] INFO: Enabled spider middlewares: HttpErrorMiddleware, OffsiteMiddleware, RefererMiddleware, UrlLengthMiddleware, DepthMiddleware
+2015-08-23 16:29:16 [scrapy] INFO: Enabled item pipelines: 
+2015-08-23 16:29:16 [scrapy] INFO: Spider opened
+2015-08-23 16:29:16 [scrapy] INFO: Crawled 0 pages (at 0 pages/min), scraped 0 items (at 0 items/min)
+2015-08-23 16:29:16 [scrapy] DEBUG: Telnet console listening on 127.0.0.1:6023
+2015-08-23 16:29:16 [py.warnings] WARNING: D:\My Workspace\PRP\Gao\crawlers\doubanmovie\doubanmovie\spiders\rotate_useragent.py:25: ScrapyDeprecationWarning: log.msg has been deprecated, create a python logger and log through it instead
+  log.msg('Current UserAgent: '+ua, log.INFO)
+
+2015-08-23 16:29:16 [scrapy] INFO: Current UserAgent: Mozilla/5.0 (Windows NT 6.0) AppleWebKit/536.5 (KHTML, like Gecko) Chrome/19.0.1084.36 Safari/536.5
+2015-08-23 16:29:16 [scrapy] DEBUG: Crawled (403) <GET http://movie.douban.com/top250> (referer: None)
+2015-08-23 16:29:16 [scrapy] DEBUG: Ignoring response <403 http://movie.douban.com/top250>: HTTP status code is not handled or not allowed
+2015-08-23 16:29:16 [scrapy] INFO: Closing spider (finished)
+2015-08-23 16:29:16 [scrapy] INFO: Dumping Scrapy stats:
+{'downloader/request_bytes': 286,
+ 'downloader/request_count': 1,
+ 'downloader/request_method_count/GET': 1,
+ 'downloader/response_bytes': 305,
+ 'downloader/response_count': 1,
+ 'downloader/response_status_count/403': 1,
+ 'finish_reason': 'finished',
+ 'finish_time': datetime.datetime(2015, 8, 23, 8, 29, 16, 314000),
+ 'log_count/DEBUG': 3,
+ 'log_count/INFO': 8,
+ 'log_count/WARNING': 2,
+ 'response_received_count': 1,
+ 'scheduler/dequeued': 1,
+ 'scheduler/dequeued/memory': 1,
+ 'scheduler/enqueued': 1,
+ 'scheduler/enqueued/memory': 1,
+ 'start_time': datetime.datetime(2015, 8, 23, 8, 29, 16, 120000)}
+2015-08-23 16:29:16 [scrapy] INFO: Spider closed (finished)
+2015-08-23 16:32:39 [scrapy] INFO: Scrapy 1.0.3 started (bot: doubanmovie)
+2015-08-23 16:32:39 [scrapy] INFO: Optional features available: ssl, http11
+2015-08-23 16:32:39 [scrapy] INFO: Overridden settings: {'NEWSPIDER_MODULE': 'doubanmovie.spiders', 'FEED_URI': 'test.json', 'SPIDER_MODULES': ['doubanmovie.spiders'], 'BOT_NAME': 'doubanmovie', 'COOKIES_ENABLED': False, 'FEED_FORMAT': 'json', 'LOG_FILE': 'movie.log', 'DOWNLOAD_DELAY': 3}
+2015-08-23 16:32:40 [scrapy] INFO: Enabled extensions: CloseSpider, FeedExporter, TelnetConsole, LogStats, CoreStats, SpiderState
+2015-08-23 16:32:40 [py.warnings] WARNING: E:\ExperimentApp\python\lib\site-packages\scrapy-1.0.3-py2.7.egg\scrapy\utils\deprecate.py:155: ScrapyDeprecationWarning: `scrapy.contrib.downloadermiddleware.useragent.UserAgentMiddleware` class is deprecated, use `scrapy.downloadermiddlewares.useragent.UserAgentMiddleware` instead
+  ScrapyDeprecationWarning)
+
+2015-08-23 16:32:40 [scrapy] INFO: Enabled downloader middlewares: HttpAuthMiddleware, DownloadTimeoutMiddleware, RotateUserAgentMiddleware, RetryMiddleware, DefaultHeadersMiddleware, MetaRefreshMiddleware, HttpCompressionMiddleware, RedirectMiddleware, ChunkedTransferMiddleware, DownloaderStats
+2015-08-23 16:32:40 [scrapy] INFO: Enabled spider middlewares: HttpErrorMiddleware, OffsiteMiddleware, RefererMiddleware, UrlLengthMiddleware, DepthMiddleware
+2015-08-23 16:32:40 [scrapy] INFO: Enabled item pipelines: 
+2015-08-23 16:32:40 [scrapy] INFO: Spider opened
+2015-08-23 16:32:40 [scrapy] INFO: Crawled 0 pages (at 0 pages/min), scraped 0 items (at 0 items/min)
+2015-08-23 16:32:40 [scrapy] DEBUG: Telnet console listening on 127.0.0.1:6023
+2015-08-23 16:32:40 [py.warnings] WARNING: D:\My Workspace\PRP\Gao\crawlers\doubanmovie\doubanmovie\spiders\rotate_useragent.py:25: ScrapyDeprecationWarning: log.msg has been deprecated, create a python logger and log through it instead
+  log.msg('Current UserAgent: '+ua, log.INFO)
+
+2015-08-23 16:32:40 [scrapy] INFO: Current UserAgent: Mozilla/5.0 (Windows NT 6.1) AppleWebKit/536.3 (KHTML, like Gecko) Chrome/19.0.1061.1 Safari/536.3
+2015-08-23 16:32:40 [scrapy] DEBUG: Crawled (403) <GET http://movie.douban.com/top250> (referer: None)
+2015-08-23 16:32:40 [scrapy] DEBUG: Ignoring response <403 http://movie.douban.com/top250>: HTTP status code is not handled or not allowed
+2015-08-23 16:32:40 [scrapy] INFO: Closing spider (finished)
+2015-08-23 16:32:40 [scrapy] INFO: Dumping Scrapy stats:
+{'downloader/request_bytes': 285,
+ 'downloader/request_count': 1,
+ 'downloader/request_method_count/GET': 1,
+ 'downloader/response_bytes': 305,
+ 'downloader/response_count': 1,
+ 'downloader/response_status_count/403': 1,
+ 'finish_reason': 'finished',
+ 'finish_time': datetime.datetime(2015, 8, 23, 8, 32, 40, 822000),
+ 'log_count/DEBUG': 3,
+ 'log_count/INFO': 8,
+ 'log_count/WARNING': 2,
+ 'response_received_count': 1,
+ 'scheduler/dequeued': 1,
+ 'scheduler/dequeued/memory': 1,
+ 'scheduler/enqueued': 1,
+ 'scheduler/enqueued/memory': 1,
+ 'start_time': datetime.datetime(2015, 8, 23, 8, 32, 40, 626000)}
+2015-08-23 16:32:40 [scrapy] INFO: Spider closed (finished)
+2015-08-23 16:35:12 [scrapy] INFO: Scrapy 1.0.3 started (bot: doubanmovie)
+2015-08-23 16:35:12 [scrapy] INFO: Optional features available: ssl, http11
+2015-08-23 16:35:12 [scrapy] INFO: Overridden settings: {'NEWSPIDER_MODULE': 'doubanmovie.spiders', 'FEED_URI': 'test.json', 'SPIDER_MODULES': ['doubanmovie.spiders'], 'BOT_NAME': 'doubanmovie', 'COOKIES_ENABLED': False, 'FEED_FORMAT': 'json', 'LOG_FILE': 'movie.log', 'DOWNLOAD_DELAY': 3}
+2015-08-23 16:35:13 [scrapy] INFO: Enabled extensions: CloseSpider, FeedExporter, TelnetConsole, LogStats, CoreStats, SpiderState
+2015-08-23 16:35:13 [py.warnings] WARNING: E:\ExperimentApp\python\lib\site-packages\scrapy-1.0.3-py2.7.egg\scrapy\utils\deprecate.py:155: ScrapyDeprecationWarning: `scrapy.contrib.downloadermiddleware.useragent.UserAgentMiddleware` class is deprecated, use `scrapy.downloadermiddlewares.useragent.UserAgentMiddleware` instead
+  ScrapyDeprecationWarning)
+
+2015-08-23 16:35:13 [scrapy] INFO: Enabled downloader middlewares: HttpAuthMiddleware, DownloadTimeoutMiddleware, RotateUserAgentMiddleware, RetryMiddleware, DefaultHeadersMiddleware, MetaRefreshMiddleware, HttpCompressionMiddleware, RedirectMiddleware, ChunkedTransferMiddleware, DownloaderStats
+2015-08-23 16:35:13 [scrapy] INFO: Enabled spider middlewares: HttpErrorMiddleware, OffsiteMiddleware, RefererMiddleware, UrlLengthMiddleware, DepthMiddleware
+2015-08-23 16:35:13 [scrapy] INFO: Enabled item pipelines: 
+2015-08-23 16:35:13 [scrapy] INFO: Spider opened
+2015-08-23 16:35:13 [scrapy] INFO: Crawled 0 pages (at 0 pages/min), scraped 0 items (at 0 items/min)
+2015-08-23 16:35:13 [scrapy] DEBUG: Telnet console listening on 127.0.0.1:6023
+2015-08-23 16:35:13 [py.warnings] WARNING: D:\My Workspace\PRP\Gao\crawlers\doubanmovie\doubanmovie\spiders\rotate_useragent.py:25: ScrapyDeprecationWarning: log.msg has been deprecated, create a python logger and log through it instead
+  log.msg('Current UserAgent: '+ua, log.INFO)
+
+2015-08-23 16:35:13 [scrapy] INFO: Current UserAgent: Mozilla/5.0 (Windows NT 6.2) AppleWebKit/536.3 (KHTML, like Gecko) Chrome/19.0.1062.0 Safari/536.3
+2015-08-23 16:35:13 [scrapy] DEBUG: Crawled (403) <GET http://movie.douban.com/top250> (referer: None)
+2015-08-23 16:35:13 [scrapy] DEBUG: Ignoring response <403 http://movie.douban.com/top250>: HTTP status code is not handled or not allowed
+2015-08-23 16:35:13 [scrapy] INFO: Closing spider (finished)
+2015-08-23 16:35:13 [scrapy] INFO: Dumping Scrapy stats:
+{'downloader/request_bytes': 285,
+ 'downloader/request_count': 1,
+ 'downloader/request_method_count/GET': 1,
+ 'downloader/response_bytes': 305,
+ 'downloader/response_count': 1,
+ 'downloader/response_status_count/403': 1,
+ 'finish_reason': 'finished',
+ 'finish_time': datetime.datetime(2015, 8, 23, 8, 35, 13, 960000),
+ 'log_count/DEBUG': 3,
+ 'log_count/INFO': 8,
+ 'log_count/WARNING': 2,
+ 'response_received_count': 1,
+ 'scheduler/dequeued': 1,
+ 'scheduler/dequeued/memory': 1,
+ 'scheduler/enqueued': 1,
+ 'scheduler/enqueued/memory': 1,
+ 'start_time': datetime.datetime(2015, 8, 23, 8, 35, 13, 768000)}
+2015-08-23 16:35:13 [scrapy] INFO: Spider closed (finished)
