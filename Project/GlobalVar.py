@@ -19,14 +19,8 @@ In = 0
 # Percent of > 1/5 for a ISDAA run
 Greater_Percent = 0
 
-# Average number of files on each channel
-AFC = 0
+# Transformation bit rate
+BIT_RATE = 0
 
-# Average channel wastage
-ACW = 0
-
-# Average size for multimedia files
-mu = 0
-
-# Variance among multimedia files
-sig = 0
+# User download bit rate
+DOWNLOAD_RATE = 0

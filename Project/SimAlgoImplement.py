@@ -124,16 +124,15 @@ def select_func(num, print_result, G):
     K_1:    No. of quality requirements
     U_1:    Channel constraint for one client
     In_1:   Channel broadcast rate
-    mu_1:   Average size for multimedia files
-    sig_1:  Variance among multimedia files
+    rate_1: Channel broadcast bit rate
 '''
 
-def set_param(N_1, P_1, K_1, U_1, In_1, mu_1, sig_1):
+def set_param(N_1, P_1, K_1, U_1, In_1, rate_1, rate_2):
 
     GlobalVar.N = N_1
     GlobalVar.P = P_1
     GlobalVar.K = K_1
     GlobalVar.U = U_1
     GlobalVar.In = In_1
-    GlobalVar.mu = mu_1
-    GlobalVar.sig = sig_1
+    GlobalVar.BIT_RATE = rate_1
+    GlobalVar.DOWNLOAD_RATE = rate_2

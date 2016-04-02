@@ -1,6 +1,8 @@
 import random
 import copy
 import GlobalVar
+import sys, os
+import json
 
 class DataGroupItem(object):
 
@@ -99,7 +101,7 @@ class DataGroupItem(object):
 
 class DataGroupMember(object):
 
-    def __init__(self, Gindex, subStream = None):
+    def __init__(self, Gindex, qualities = None):
 
         self.subStream = []
         self.member_index = Gindex
@@ -108,9 +110,10 @@ class DataGroupMember(object):
         # Here using random generation-------------------------need modification
         # The range is (30,100), because of the requirement of 
         # 1/5 approximation algorithm in ISDAA
-        for j in range(1, GlobalVar.K + 1):
-            self.subStream.append(DataGroupItem(self.member_index, j, \
-                random.randint(30, 1000)))
+        if qualities != None:
+            for j in range(1, GlobalVar.K + 1):
+                self.subStream.append(DataGroupItem(self.member_index, j, \
+                                                qualities[GlobalVar.K - j]))
 
     def print_member(self):
         for i in self.subStream:
@@ -143,16 +146,18 @@ class DataGroupMember(object):
 
 class DataGroup(object):
     
-    def __init__(self, empty, G_1 = None):
+    def __init__(self, empty):
 
         self.G_1 = []
         
         if empty == False:
 
-            # Generate the Group of data groups
-            # Here using random generation-------------------------need modification
-            for i in range(1, GlobalVar.P + 1):
-                self.G_1.append(DataGroupMember(i))
+            load_file_path = os.path.join(sys.path[0] + "\..\data\Quality_Video_data")
+
+            with open(load_file_path, "r") as read_file:
+                quality_data = json.load(read_file)
+                for i in range(1, GlobalVar.P + 1):
+                    self.G_1.append(DataGroupMember(i, quality_data[i-1]))
 
     def print_groups(self):
         for i in self.G_1:

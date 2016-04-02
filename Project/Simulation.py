@@ -1,6 +1,7 @@
 from SimAlgoImplement import set_param
-from PerformEval import average_criterion, avg_access_time, access_time_criterion
-
+from PerformEval import average_criterion, avg_access_time, access_time_criterion, zipf_criterion
+from DivideData import divide_video
+from SimOutput import output_graph
 
 def main():
 
@@ -11,15 +12,21 @@ def main():
         K_1:    No. of quality requirements
         U_1:    Channel constraint for one client
         In_1:   Length of the index
-        mu_1:   Average size for multimedia files
-        sig_1:  Variance among multimedia files
+        rate_1: Transformation bit rate
+        rate_2: User download bit rate
     '''
 
-    set_param(10, 6, 3, 5, 1, 4*1024, 5)
+    #set_param(10, 500, 3, 5, 1, 5120, 262144)
 
-    #average_criterion(3, 20)
+    #divide_video()
 
-    access_time_criterion(50, 1000)
+    #average_criterion(10)
+
+    #access_time_criterion(50, 600)
+
+    #zipf_criterion(50, 600)
+
+    #output_graph()
 
 if __name__ == '__main__':
     main()

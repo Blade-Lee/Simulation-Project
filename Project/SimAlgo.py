@@ -225,18 +225,25 @@ def ISDAA(DG_1, X):
 
     DG = copy.deepcopy(DG_1)
 
-    lower = SIZE(DG)
+    lower = int(SIZE(DG))
     upper = 2*lower
 
     dual = 0
 
-    while abs(upper - lower) > 0.0000000001:
-        d = (upper+lower)/float(2)
+    count = 0
+
+    while upper != lower:
+        count += 1
+        print "ISDAA itering: %d" %count
+        d = (upper+lower)/2
         dual = DUAL(SCALE(DG, d))[0]
         if dual > GlobalVar.T:
             lower = d
         else:
             upper = d
+
+        print "\tupper:%d" %upper, type(upper)
+        print "\tlower:%d" %lower, type(lower)
 
     answer = DUAL(SCALE(DG, upper))
 
